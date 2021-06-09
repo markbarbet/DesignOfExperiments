@@ -13,8 +13,60 @@ import yaml
 import re
 import numpy as np
 import module_0 as m0
+import multiprocessing
+from shutil import copyfile
 
+def get_matrices_parallel(arg):
+        file=arg[0]
+        working_dir=arg[1]
+        cti_file=arg[2]
+        reaction_uncertainty_csv=arg[3]
+        #print(arg)
+        return run_simulation_parallel([[file,]],working_dir,cti_file,reaction_uncertainty_csv)
 
+def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_csv):
+        #print(yaml_list,working_dir,cti_file,reaction_uncertainty_csv)
+        files_to_include = yaml_list
+        
+        working_directory = working_dir
+        
+        cti_file = cti_file
+        
+        reaction_uncertainty_csv = reaction_uncertainty_csv
+        
+        rate_constant_target_value_data = ''
+        
+        original_cti=os.path.join(working_directory,cti_file)
+        temp_cti=os.path.splitext(yaml_list[0][0])[0]
+        temp_cti=cti_file.split('.')[0]+'_'+temp_cti+'_temp.cti'
+        temp_cti=os.path.join(working_directory,temp_cti)
+        copyfile(original_cti,temp_cti)
+        newfile=os.path.split(temp_cti)[-1]
+        
+        MSI_instance = MSI.optimization.optimization_shell.MSI_optimization(newfile,
+                                                                            0.01,
+                                                                            1,
+                                                                            1,
+                                                                            working_directory,
+                                                                            files_to_include,
+                                                                            reaction_uncertainty_csv,
+                                                                            rate_constant_target_value_data)
+        MSI_instance.run_simulations()
+        
+        
+        #self.add_yaml_data()
+        
+        MSI_instance.get_matrices()
+        
+        S=MSI_instance.S_matrix
+        #X=MSI_instance.X
+        Z=MSI_instance.z_data_frame
+        Y=MSI_instance.Y_data_frame
+        #print(Z['value'][630:])
+        #print(Y)
+        os.remove(temp_cti)
+        os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
+        return {'S':S,'Y':Y,'Z':Z}
 
 class potential_experiments():
     
@@ -38,16 +90,36 @@ class potential_experiments():
                                           'thermal-boundary':'isothermal',
                                           'mechanical-boundary':'constant pressure',
                                           'volume':0.000085,
-                                          'yaml_output_name':'DoE_yaml_'}):
+                                          'yaml_output_name':'DoE_yaml_',
+                                          'parallel-computing':True}):
         self.input_options=input_options
         self.constructor_settings=self.input_options['constructor_settings']
         if re.match('[Jj][Ss][Rr]',self.input_options['experiment_type']) or re.match('[Jj]et[- ][Ss]tirred[- ][Rr]eactor',self.input_options['experiment_type']):
             self.exp_type='JSR'
             self.conditions_list=self.JSR_conditions_constructor(self.input_options['constructor_settings'])
             self.yaml_file_list=self.JSR_yaml_constructor(self.conditions_list)
-            self.matrices=self.get_matrices()
             
+            if not self.input_options['parallel-computing']:
+                self.matrices=self.get_matrices()
+                
+            elif self.input_options['parallel-computing']:
+                self.cores=input_options['cores']
+                args=self.get_args()
+                with multiprocessing.Pool(processes=self.cores) as pool:
+                    self.matrices=pool.map(get_matrices_parallel,args)
+                    
+                    
             
+    def get_args(self):
+        
+        args=[]
+        for i,file in enumerate(self.yaml_file_list):
+            args=args+[[file,
+                       self.input_options['initialization'].startup_data['working_dir'],
+                       self.input_options['initialization'].MSI_settings['chemical_model'],
+                       self.input_options['initialization'].MSI_settings['reaction_uncertainty']]]
+        #print(args)
+        return args
             
     def load_to_obj(self, path:str = ''):
         """
@@ -78,6 +150,8 @@ class potential_experiments():
             
         return(matrices)
         
+    
+    
     
     
     def run_simulation(self,yaml_list):

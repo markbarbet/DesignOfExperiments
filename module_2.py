@@ -16,15 +16,44 @@ import pandas as pd
 class ranking():
     
     def __init__(self,module0=None,module1=None,settings={'batch-size':10,
-                                                          'total_new_exp':10}):
+                                                          'total_new_exp':10,
+                                                          'output-csv':'output.csv'}):
 
 
         self.module0=module0
         self.module1=module1
         self.settings=settings
         self.excluded_yamls=[]
+        total_iters=int(np.ceil(self.settings['total_new_exp']/self.settings['batch-size']))
+        #print(total_iters)
+        #total_exps=0
+        final_exp_dataframe=pd.DataFrame(columns=['experiment','ratio'])
+        #current_yamls=copy.deepcopy(self.module1.yaml_file_list)
+        self.updated_S=copy.deepcopy(self.module0.S_original)
+        for i in np.arange(total_iters):
+            #print(i,"wtf")
+            self.ranking=self.get_rankings(self.excluded_yamls)
+            if i+1<total_iters or np.remainder(self.settings['total_new_exp'],self.settings['batch-size'])==0:
+                #print("Inside first statement")
+                final_exp_dataframe=pd.concat([final_exp_dataframe,self.ranking.head(self.settings['batch-size'])],sort=False)
+            elif np.remainder(self.settings['total_new_exp'],self.settings['batch-size'])==0 and i+1==total_iters:
+                final_exp_dataframe=pd.concat([final_exp_dataframe,
+                           self.ranking.head(np.remainder(self.settings['total_new_exp'],
+                                                          self.settings['batch-size']))],
+                          sort=False)
+                #print("Inside second statement")
+        #print(final_exp_dataframe)
+        final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                self.settings['output-csv']),index=False)    
+            #self.excluded_yamls=list(final_exp_dataframe['experiment'])
+            #self.updated_S=self.get_updated_S(self.updated_S)
+            #current_yamls=[]
+            #for j,item in enumerate(self.module1.yaml_file_list):
+                #if item not in self.excluded_yamls:
+                    #current_yamls=current_yamls+[item]
+                    
+            
         
-        self.ranking=self.get_rankings()
         
     
     def get_S_current_columns(self,msi_instance=None):
@@ -32,52 +61,7 @@ class ranking():
         rownames=list(msi_instance.Y_data_frame['value'])
         return (colnames,rownames)
     
-    # def get_experiment_columns(self,file,indexer):
-    #     data=self.module1.load_to_obj(file)
-    #     columns_Z=[]
-    #     columns_Y=[]
-    #     #print(self.rownames_nominal)
-    #     previous_exp_index=int(self.rownames_nominal[-1].split('_')[-1])
-    #     #previous_exp_index=int(list(self.rownames_nominal['value'])[-1].split('_')[-1])
-    #     # for i in range(self.num_rxns):
-    #     #     columns.append('A'+str(i))
-    #     #     columns.append('n'+str(i))
-    #     #     columns.append('Ea'+str(i))
-    #     current_exp_index=previous_exp_index+1
-    #     # if len(data['common-properties']['temperature']['value-list']==1:
-    #     #        columns.append('T_experiment_'+str(current_exp_index))
-    #     # columns.append('P_experiment_'+str(current_exp_index))
-    #     # for i,frac in enumerate(data['common-properties']['composition']):
-    #     #     if re.match('[Rr]eactant',frac['type']):
-    #     #         columns.append('X_'+frac['species']+'_experiment_'+str(current_exp_index))
-    #     current_exp_length=(len(data['datapoints']['mole-fraction'])+len(data['datapoints']['concentration']))*len(data['common-properties']['temperature']['value-list'])
-    #     for i,element in enumerate(self.module1.matrices[indexer]['Y']['value']):
-    #         if 'T_experiment' in element:
-    #             start_exp=i
-    #             break
-    #     #print(self.module1.matrices[indexer]['Y']['value'])
-    #     columns_Z=list(self.module1.matrices[indexer]['Z']['value'])[start_exp:]
-    #     for i,item in enumerate(columns_Z):
-    #         templist=item.split('_')
-    #         templist[-1]=str(current_exp_index)
-    #         columns_Z[i]='_'.join(templist)
-        
-    #     rows_X=copy.deepcopy(columns_Z)
-    #     columns_Y=copy.deepcopy(columns_Z)
-    #     species_count=0
-    #     for i, item in enumerate(columns_Y):
-    #         if 'X_' in item:
-    #             temp=item.split('_')
-    #             temp[1]=str(species_count)
-    #             species_count=species_count+1
-    #             columns_Y[i]='_'.join(temp)
-    #     #print(columns_Y)
-    #     #print(columns_Z)
-    #     columns_Y=list(self.module1.matrices[indexer]['Y']['value'])[0:current_exp_length-1]+columns_Y
-    #     columns_Z=list(self.module1.matrices[indexer]['Y']['value'])[0:current_exp_length-1]+columns_Z
-    #     Z_to_add=self.module1.matrices[indexer]['Z'][self.module1.matrices[indexer]['Z']['value'].isin(columns_Z)]
-    #     print(Z_to_add,columns_Z)
-    #     return (rows_X,columns_Y,columns_Z)
+    
     
     def get_Z(self,file,indexer):
         data=self.module1.load_to_obj(file)
@@ -343,7 +327,7 @@ class ranking():
                 uniques=uniques+[index]
         return uniques
     
-    def get_rankings(self):
+    def get_rankings(self,excluded_yamls):
         ranking_list=[]
         self.rownames_nominal,self.colnames_nominal=self.get_S_current_columns(msi_instance=self.module0.initial_optimization)
         self.mech=os.path.join(self.module1.input_options['working_dir'],self.module0.MSI_settings['chemical_model'])
@@ -365,55 +349,60 @@ class ranking():
             original_posterior=sigma_list_og[sigma_list_index][0]
         
         for i,file in enumerate(self.module1.yaml_file_list):
-            data=self.module1.load_to_obj(os.path.join(self.module1.input_options['working_dir'],file))
-            #parametersX,parametersY,parametersZ=self.get_experiment_columns(os.path.join(self.module1.input_options['working_dir'],file),i)
-            parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),i)
-            parametersY=self.get_Y(os.path.join(self.module1.input_options['working_dir'],file),i)
-            #print(parametersZ)
-            self.experiment_length=self.get_exp_length(os.path.join(self.module1.input_options['working_dir'],file))
-            #print(self.experiment_length)
-            X_to_add=self.get_X_names(parametersZ)
-            
-            new_Z=self.construct_Z_new(parametersZ,self.module0.initial_optimization.z_data_frame)
-            
-            new_Y=self.construct_Y_new(parametersY,self.module0.initial_optimization.Y_data_frame)
-            
-            S1_new,S2_new,S3_new,S4_new,S5_new=self.get_new_S_chunks(self.num_rxns,X_to_add,parametersY,parametersZ,
-                                       self.module0.S_original,
-                                       self.module0.initial_optimization.Y_data_frame,
-                                       self.module0.initial_optimization.z_data_frame,
-                                       self.module1.matrices[i]['S'])
-            #print(self.module0.initial_optimization.Y_data_frame['value'][635:])
-            S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,self.module0.S_original)
-            new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
-            #print(list(self.module0.initial_optimization.z_data_frame['value']))
-            #print(np.shape(S_proposed))
-            #print(self.module0.initial_optimization.z_data_frame)
-            #print(len(new_Z))
-            s=self.get_normalized_S(S_proposed, new_Z, new_Y)
-            c=self.get_covariance(s)
-            #print(np.shape(c))
-            if re.match('[Rr]ate[-_ ][Cc]onstant',self.module0.startup_data['quantity_of_interest']):
-                k_block=self.get_k_block_proposed(S_proposed,self.module0.S_original)
-                targets=pd.read_csv(os.path.join(self.module0.startup_data['working_dir'],
-                                             self.module0.MSI_settings['rate_constant_targets']))
-                sigma_list=self.calculate_sigmas_for_rate_constants(k_block,
-                                                                    targets,
-                                                                    self.get_unique_elements(list(targets['Reaction']),gas),
-                                                                    gas,
-                                                                    c)
-                target_reaction=self.module0.startup_data['target_reaction']['equation']
-                target_index=list(gas.reaction_equations()).index(target_reaction)
-                sigma_list_index=self.get_unique_elements(list(targets['Reaction']),gas).index(target_index)
-                #print(sigma_list[sigma_list_index][0])
-                ranking_list=ranking_list+[sigma_list[sigma_list_index][0]/original_posterior]
+            if file not in excluded_yamls:
+                data=self.module1.load_to_obj(os.path.join(self.module1.input_options['working_dir'],file))
+                #parametersX,parametersY,parametersZ=self.get_experiment_columns(os.path.join(self.module1.input_options['working_dir'],file),i)
+                parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),i)
+                parametersY=self.get_Y(os.path.join(self.module1.input_options['working_dir'],file),i)
+                #print(parametersZ)
+                self.experiment_length=self.get_exp_length(os.path.join(self.module1.input_options['working_dir'],file))
+                #print(self.experiment_length)
+                X_to_add=self.get_X_names(parametersZ)
+                
+                new_Z=self.construct_Z_new(parametersZ,self.module0.initial_optimization.z_data_frame)
+                
+                new_Y=self.construct_Y_new(parametersY,self.module0.initial_optimization.Y_data_frame)
+                
+                S1_new,S2_new,S3_new,S4_new,S5_new=self.get_new_S_chunks(self.num_rxns,X_to_add,parametersY,parametersZ,
+                                           self.module0.S_original,
+                                           self.module0.initial_optimization.Y_data_frame,
+                                           self.module0.initial_optimization.z_data_frame,
+                                           self.module1.matrices[i]['S'])
+                #print(self.module0.initial_optimization.Y_data_frame['value'][635:])
+                S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,self.module0.S_original)
+                new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
+                #print(list(self.module0.initial_optimization.z_data_frame['value']))
+                #print(np.shape(S_proposed))
+                #print(self.module0.initial_optimization.z_data_frame)
+                #print(len(new_Z))
+                s=self.get_normalized_S(S_proposed, new_Z, new_Y)
+                c=self.get_covariance(s)
+                #print(np.shape(c))
+                if re.match('[Rr]ate[-_ ][Cc]onstant',self.module0.startup_data['quantity_of_interest']):
+                    k_block=self.get_k_block_proposed(S_proposed,self.module0.S_original)
+                    targets=pd.read_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                 self.module0.MSI_settings['rate_constant_targets']))
+                    sigma_list=self.calculate_sigmas_for_rate_constants(k_block,
+                                                                        targets,
+                                                                        self.get_unique_elements(list(targets['Reaction']),gas),
+                                                                        gas,
+                                                                        c)
+                    target_reaction=self.module0.startup_data['target_reaction']['equation']
+                    target_index=list(gas.reaction_equations()).index(target_reaction)
+                    sigma_list_index=self.get_unique_elements(list(targets['Reaction']),gas).index(target_index)
+                    #print(sigma_list[sigma_list_index][0])
+                    ranking_list=ranking_list+[sigma_list[sigma_list_index][0]/original_posterior]
+                #elif re.match('[Ii]gnition[_ -][Dd]elay',self.module0.startup_data['quantity_of_interest']):
+                
         #print(ranking_list)
         output_ranking=pd.DataFrame(columns=['experiment','ratio'])
         output_ranking['experiment']=self.module1.yaml_file_list
         output_ranking['ratio']=ranking_list
         output_ranking.sort_values(by='ratio',ascending=True,inplace=True)
-        output_ranking.to_csv(os.path.join(self.module0.startup_data['working_dir'],
-                                             'output_rankings.csv'),index=False)
+        #output_ranking.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                             #'output_rankings.csv'),index=False)
+        #print(output_ranking)
+        return output_ranking
             #posteriors=self.return_posteriors(c,new_Z)
             #posteriors.to_csv('test.csv')
             #print(c)

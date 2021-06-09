@@ -138,7 +138,13 @@ class design_of_experiments():
         self.mod2_settings={}
         self.mod2_settings['batch-size']=self.input_options['new_experiments']['batch-size']
         self.mod2_settings['total_new_exp']=self.input_options['new_experiments']['total_new_experiments']
+        self.mod2_settings['output-csv']=self.input_options['new_experiments']['output-csv']
     
+    
+    def get_parallel_setting(self):
+        self.module_1_input['parallel-computing']=self.input_options['new_experiments']['parallel-computation']
+        #print(type(self.module_1_input['parallel-computing']))
+        self.module_1_input['cores']=int(self.input_options['new_experiments']['cores'])
     
     def get_parameters(self):
         self.module_0_input={}
@@ -156,6 +162,7 @@ class design_of_experiments():
         self.get_experiment_attributes()
         self.get_experiment_yaml_template()
         self.conditions_constructor()
+        self.get_parallel_setting()
         self.get_mod2_settings()
         
         
