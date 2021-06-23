@@ -43,19 +43,45 @@ class ranking():
                           sort=False)
                 #print("Inside second statement")
         #print(final_exp_dataframe)
+        #final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+        #                                        self.settings['output-csv']),index=False)    
+            self.excluded_yamls=list(final_exp_dataframe['experiment'])
+            self.updated_S=self.get_updated_S(self.updated_S,self.excluded_yamls)
+            current_yamls=[]
+            for j,item in enumerate(self.module1.yaml_file_list):
+                if item not in self.excluded_yamls:
+                    current_yamls=current_yamls+[item]
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
-                                                self.settings['output-csv']),index=False)    
-            #self.excluded_yamls=list(final_exp_dataframe['experiment'])
-            #self.updated_S=self.get_updated_S(self.updated_S)
-            #current_yamls=[]
-            #for j,item in enumerate(self.module1.yaml_file_list):
-                #if item not in self.excluded_yamls:
-                    #current_yamls=current_yamls+[item]
-                    
+                                                self.settings['output-csv']),index=False)
             
         
         
-    
+    def get_updated_S(self,S,yamls):
+        
+        
+        S_countV=0
+        S_countH=0
+        new_Z=copy.deepcopy(self.module0.initial_optimization.z_data_frame)
+        new_Y=copy.deepcopy(self.module0.initial_optimization.Y_data_frame)
+        for i,file in enumerate(yamls):
+            parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),self.module1.yaml_file_list.index(file))
+            new_Z=self.construct_Z_new(parametersZ,new_Z)
+            parametersY=self.get_Y(os.path.join(self.module1.input_options['working_dir'],file),self.module1.yaml_file_list.index(file))
+            new_Y=self.construct_Y_new(parametersY,new_Y)
+            self.experiment_length=self.get_exp_length(os.path.join(self.module1.input_options['working_dir'],file))
+            X_to_add=self.get_X_names(parametersZ)
+            S1_new,S2_new,S3_new,S4_new,S5_new=self.get_new_S_chunks(self.num_rxns,X_to_add,parametersY,parametersZ,
+                                           self.module0.S_original,
+                                           self.module0.initial_optimization.Y_data_frame,
+                                           self.module0.initial_optimization.z_data_frame,
+                                           self.module1.matrices[self.module1.yaml_file_list.index(file)]['S'])
+            new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
+            S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S,countV=S_countV,countH=S_countH)
+            S_countH=S_countH+ self.get_prior_phys_param_len(parametersY)  
+            S_countV=self.experiment_length+S_countV+S_countH
+            
+            
+        
     def get_S_current_columns(self,msi_instance=None):
         colnames=list(msi_instance.X_data_frame['value'])
         rownames=list(msi_instance.Y_data_frame['value'])
@@ -213,7 +239,7 @@ class ranking():
         return len(list(priorY['value'])[final_Ea+1:])-target_length
         
         
-    def construct_zeroes(self,S3,S1,S4):
+    def construct_zeroes(self,S3,S1,S4,countV=0,countH=0):
         prior_exp_len=self.get_prior_exp_len(self.module0.initial_optimization.Y_data_frame)
         Z1=np.zeros((prior_exp_len,np.shape(S3)[1]))
         prior_phys_params=self.get_prior_phys_param_len(self.module0.initial_optimization.Y_data_frame)
@@ -227,17 +253,17 @@ class ranking():
             target_length=0
             
         #print(prior_phys_params,target_length)
-        Z2=np.zeros((prior_phys_params+target_length,np.shape(S3)[1]))
-        Z3=np.zeros((np.shape(S1)[0],prior_phys_params))
-        Z4=np.zeros((np.shape(S4)[0],prior_phys_params))
+        Z2=np.zeros((prior_phys_params+target_length+countV,np.shape(S3)[1]))
+        Z3=np.zeros((np.shape(S1)[0],prior_phys_params+countH))
+        Z4=np.zeros((np.shape(S4)[0],prior_phys_params+countH))
         
         return (Z1,Z2,Z3,Z4)
         
         
         
-    def build_S(self,S1,S2,S3,S4,S5,S_old):
+    def build_S(self,S1,S2,S3,S4,S5,S_old,countV=0,countH=0):
         
-        Z1,Z2,Z3,Z4=self.construct_zeroes(S3,S1,S4)
+        Z1,Z2,Z3,Z4=self.construct_zeroes(S3,S1,S4,countV=countV,countH=countH)
         #print(np.shape(Z1))
         #print(np.shape(S3))
         #print(np.shape(Z2))
