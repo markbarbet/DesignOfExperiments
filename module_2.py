@@ -43,16 +43,16 @@ class ranking():
                           sort=False)
                 #print("Inside second statement")
         #print(final_exp_dataframe)
-        #final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
-        #                                        self.settings['output-csv']),index=False)    
-            self.excluded_yamls=list(final_exp_dataframe['experiment'])
-            self.updated_S=self.get_updated_S(self.updated_S,self.excluded_yamls)
-            current_yamls=[]
-            for j,item in enumerate(self.module1.yaml_file_list):
-                if item not in self.excluded_yamls:
-                    current_yamls=current_yamls+[item]
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
-                                                self.settings['output-csv']),index=False)
+        #                                        self.settings['output-csv']),index=False)    
+            #self.excluded_yamls=list(final_exp_dataframe['experiment'])
+            #self.updated_S=self.get_updated_S(self.updated_S,self.excluded_yamls)
+            #current_yamls=[]
+            #for j,item in enumerate(self.module1.yaml_file_list):
+                #if item not in self.excluded_yamls:
+                    #current_yamls=current_yamls+[item]
+        #final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                #self.settings['output-csv']),index=False)
             
         
         
