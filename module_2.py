@@ -29,10 +29,20 @@ class ranking():
         #total_exps=0
         final_exp_dataframe=pd.DataFrame(columns=['experiment','ratio'])
         #current_yamls=copy.deepcopy(self.module1.yaml_file_list)
+        S_countH=0
+        S_countV=0
+        new_Z=None
+        new_Y=None
+        new_X_list=None
         self.updated_S=copy.deepcopy(self.module0.S_original)
         for i in np.arange(total_iters):
-            #print(i,"wtf")
-            self.ranking=self.get_rankings(self.excluded_yamls)
+            print(i,"wtf")
+            if i==0:
+                self.ranking=self.get_rankings(self.excluded_yamls,self.updated_S,i,countH=S_countH, countV=S_countV)
+            elif i>0:
+                self.ranking=self.get_rankings(self.excluded_yamls,self.updated_S,i,
+                                               countH=S_countH, countV=S_countV,
+                                               Z_prev=new_Z,Y_prev=new_Y,X_prev=new_X_list)
             if i+1<total_iters or np.remainder(self.settings['total_new_exp'],self.settings['batch-size'])==0:
                 #print("Inside first statement")
                 final_exp_dataframe=pd.concat([final_exp_dataframe,self.ranking.head(self.settings['batch-size'])],sort=False)
@@ -46,7 +56,10 @@ class ranking():
         #final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
         #                                        self.settings['output-csv']),index=False)    
             self.excluded_yamls=list(final_exp_dataframe['experiment'])
-            self.updated_S=self.get_updated_S(self.updated_S,self.excluded_yamls)
+            print('We are in iteration: '+str(i) )
+            self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls)
+            print('shape')
+            print(np.shape(self.updated_S))
             current_yamls=[]
             for j,item in enumerate(self.module1.yaml_file_list):
                 if item not in self.excluded_yamls:
@@ -56,30 +69,40 @@ class ranking():
             
         
         
-    def get_updated_S(self,S,yamls):
+    def get_updated_S(self,S,yamls,countH=0,countV=0):
         
         
-        S_countV=0
-        S_countH=0
+        S_countV=countV
+        S_countH=countH
         new_Z=copy.deepcopy(self.module0.initial_optimization.z_data_frame)
         new_Y=copy.deepcopy(self.module0.initial_optimization.Y_data_frame)
+        S_proposed=copy.deepcopy(S)
         for i,file in enumerate(yamls):
+            print('Shit '+str(i))
             parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),self.module1.yaml_file_list.index(file))
             new_Z=self.construct_Z_new(parametersZ,new_Z)
             parametersY=self.get_Y(os.path.join(self.module1.input_options['working_dir'],file),self.module1.yaml_file_list.index(file))
             new_Y=self.construct_Y_new(parametersY,new_Y)
             self.experiment_length=self.get_exp_length(os.path.join(self.module1.input_options['working_dir'],file))
             X_to_add=self.get_X_names(parametersZ)
+            #print(len(X_to_add))
             S1_new,S2_new,S3_new,S4_new,S5_new=self.get_new_S_chunks(self.num_rxns,X_to_add,parametersY,parametersZ,
                                            self.module0.S_original,
                                            self.module0.initial_optimization.Y_data_frame,
                                            self.module0.initial_optimization.z_data_frame,
                                            self.module1.matrices[self.module1.yaml_file_list.index(file)]['S'])
             new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
-            S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S,countV=S_countV,countH=S_countH)
-            S_countH=S_countH+ self.get_prior_phys_param_len(parametersY)  
-            S_countV=self.experiment_length+S_countV+S_countH
+            #print(i,new_Y)
+            print('Count H: '+str(S_countH)+', Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length)) 
+            S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S_proposed,countV=S_countV,countH=S_countH)
+            #S_countH=S_countH+ self.get_prior_phys_param_len(parametersY) 
             
+            S_countH=S_countH+len(X_to_add)
+            #if i>0:
+            S_countV=self.experiment_length+S_countV+S_countH
+            #elif i==0:
+            #    S_countV=S_countV+S_countH
+        return (S_proposed,new_Y,new_Z,new_X_list,S_countH,S_countV)
             
         
     def get_S_current_columns(self,msi_instance=None):
@@ -225,7 +248,7 @@ class ranking():
         return len(list(priorY['value'])[0:end_exp_index])
         
     def get_prior_phys_param_len(self,priorY):
-        
+        #print(priorY)
         for i,item in enumerate(list(priorY['value'])):
             if 'Ea_' in item:
                 final_Ea=i
@@ -269,6 +292,8 @@ class ranking():
         #print(np.shape(Z2))
         block1=np.block([[Z1],[S3],[Z2]])
         block2=np.block([[S1,Z3,S2],[S4,Z4,S5]])
+        print(np.shape(Z3),np.shape(Z4))
+        
         #print('S',np.shape(S_old))
         #print('Z1',np.shape(Z1))
         # print('S3',np.shape(S3))
@@ -279,8 +304,10 @@ class ranking():
         # print('S4',np.shape(S4))
         # print('Z4',np.shape(Z4))
         # print('S5',np.shape(S5))
-        # print(np.shape(block1))
-        # print(np.shape(block2))
+        print(countV)
+        print(np.shape(block1))
+        print(np.shape(block2),'s')
+        print(np.shape(S_old))
         S=np.block([[S_old,block1],[block2]])
         return S
         
@@ -353,7 +380,7 @@ class ranking():
                 uniques=uniques+[index]
         return uniques
     
-    def get_rankings(self,excluded_yamls):
+    def get_rankings(self,excluded_yamls,S,iteration,countH=0,countV=0,Z_prev=None,Y_prev=None,X_prev=None):
         ranking_list=[]
         self.rownames_nominal,self.colnames_nominal=self.get_S_current_columns(msi_instance=self.module0.initial_optimization)
         self.mech=os.path.join(self.module1.input_options['working_dir'],self.module0.MSI_settings['chemical_model'])
@@ -380,14 +407,21 @@ class ranking():
                 #parametersX,parametersY,parametersZ=self.get_experiment_columns(os.path.join(self.module1.input_options['working_dir'],file),i)
                 parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),i)
                 parametersY=self.get_Y(os.path.join(self.module1.input_options['working_dir'],file),i)
-                #print(parametersZ)
-                self.experiment_length=self.get_exp_length(os.path.join(self.module1.input_options['working_dir'],file))
-                #print(self.experiment_length)
-                X_to_add=self.get_X_names(parametersZ)
-                
-                new_Z=self.construct_Z_new(parametersZ,self.module0.initial_optimization.z_data_frame)
-                
-                new_Y=self.construct_Y_new(parametersY,self.module0.initial_optimization.Y_data_frame)
+                if iteration==0:
+                    
+                    #print(parametersZ)
+                    self.experiment_length=self.get_exp_length(os.path.join(self.module1.input_options['working_dir'],file))
+                    #print(self.experiment_length)
+                    X_to_add=self.get_X_names(parametersZ)
+                    
+                    new_Z=self.construct_Z_new(parametersZ,self.module0.initial_optimization.z_data_frame)
+                    
+                    new_Y=self.construct_Y_new(parametersY,self.module0.initial_optimization.Y_data_frame)
+                    
+                elif iteration>0:
+                    new_Z=self.construct_Z_new(parametersZ,Z_prev)
+                    
+                    new_Y=self.construct_Y_new(parametersY,Y_prev)
                 
                 S1_new,S2_new,S3_new,S4_new,S5_new=self.get_new_S_chunks(self.num_rxns,X_to_add,parametersY,parametersZ,
                                            self.module0.S_original,
@@ -395,8 +429,11 @@ class ranking():
                                            self.module0.initial_optimization.z_data_frame,
                                            self.module1.matrices[i]['S'])
                 #print(self.module0.initial_optimization.Y_data_frame['value'][635:])
-                S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,self.module0.S_original)
-                new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
+                S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S,countH=countH,countV=countV)
+                if iteration==0:
+                    new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
+                elif iteration>0:
+                    new_X_list=X_prev+X_to_add
                 #print(list(self.module0.initial_optimization.z_data_frame['value']))
                 #print(np.shape(S_proposed))
                 #print(self.module0.initial_optimization.z_data_frame)
@@ -405,7 +442,7 @@ class ranking():
                 c=self.get_covariance(s)
                 #print(np.shape(c))
                 if re.match('[Rr]ate[-_ ][Cc]onstant',self.module0.startup_data['quantity_of_interest']):
-                    k_block=self.get_k_block_proposed(S_proposed,self.module0.S_original)
+                    k_block=self.get_k_block_proposed(S_proposed,S)
                     targets=pd.read_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                  self.module0.MSI_settings['rate_constant_targets']))
                     sigma_list=self.calculate_sigmas_for_rate_constants(k_block,
