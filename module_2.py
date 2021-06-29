@@ -420,9 +420,9 @@ class ranking():
                     
                 elif iteration>0:
                     new_Z=self.construct_Z_new(parametersZ,Z_prev)
-                    
+                    X_to_add=self.get_X_names(parametersZ)
                     new_Y=self.construct_Y_new(parametersY,Y_prev)
-                
+                    self.experiment_length=self.get_exp_length(os.path.join(self.module1.input_options['working_dir'],file))
                 S1_new,S2_new,S3_new,S4_new,S5_new=self.get_new_S_chunks(self.num_rxns,X_to_add,parametersY,parametersZ,
                                            self.module0.S_original,
                                            self.module0.initial_optimization.Y_data_frame,
