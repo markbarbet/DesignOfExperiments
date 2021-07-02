@@ -98,10 +98,12 @@ class ranking():
             #S_countH=S_countH+ self.get_prior_phys_param_len(parametersY) 
             
             S_countH=S_countH+len(X_to_add)
+            print(X_to_add)
             #if i>0:
-            S_countV=self.experiment_length+S_countV+S_countH
+            S_countV=self.experiment_length+S_countV+len(X_to_add)
             #elif i==0:
             #    S_countV=S_countV+S_countH
+            print('New Count H: '+str(S_countH)+', New Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length))
         return (S_proposed,new_Y,new_Z,new_X_list,S_countH,S_countV)
             
         
@@ -292,7 +294,7 @@ class ranking():
         #print(np.shape(Z2))
         block1=np.block([[Z1],[S3],[Z2]])
         block2=np.block([[S1,Z3,S2],[S4,Z4,S5]])
-        print(np.shape(Z3),np.shape(Z4))
+        print(np.shape(Z2),np.shape(Z3),np.shape(Z4))
         
         #print('S',np.shape(S_old))
         #print('Z1',np.shape(Z1))
@@ -429,6 +431,7 @@ class ranking():
                                            self.module0.initial_optimization.z_data_frame,
                                            self.module1.matrices[i]['S'])
                 #print(self.module0.initial_optimization.Y_data_frame['value'][635:])
+                print('CountH: '+str(countH)+', countV: '+str(countV))
                 S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S,countH=countH,countV=countV)
                 if iteration==0:
                     new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
