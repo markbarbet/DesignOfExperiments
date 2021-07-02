@@ -7,6 +7,7 @@ Created on Mon May 24 15:08:21 2021
 
 
 import os
+from typing import final
 import numpy as np
 import re
 import cantera as ct
@@ -57,7 +58,7 @@ class ranking():
         #                                        self.settings['output-csv']),index=False)    
             self.excluded_yamls=list(final_exp_dataframe['experiment'])
             print('We are in iteration: '+str(i) )
-            self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls)
+            self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,countH=S_countH,countV=S_countV)
             print('shape')
             print(np.shape(self.updated_S))
             current_yamls=[]
@@ -402,9 +403,10 @@ class ranking():
             sigma_list_index=self.get_unique_elements(list(targets['Reaction']),gas).index(target_index)
             #print(sigma_list[sigma_list_index][0])
             original_posterior=sigma_list_og[sigma_list_index][0]
-        
+        final_yamls=[]
         for i,file in enumerate(self.module1.yaml_file_list):
             if file not in excluded_yamls:
+                final_yamls.append(file)
                 data=self.module1.load_to_obj(os.path.join(self.module1.input_options['working_dir'],file))
                 #parametersX,parametersY,parametersZ=self.get_experiment_columns(os.path.join(self.module1.input_options['working_dir'],file),i)
                 parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),i)
@@ -440,9 +442,11 @@ class ranking():
                 #print(list(self.module0.initial_optimization.z_data_frame['value']))
                 #print(np.shape(S_proposed))
                 #print(self.module0.initial_optimization.z_data_frame)
-                #print(len(new_Z))
+                print(len(new_Z),np.shape(S_proposed))
+                
                 s=self.get_normalized_S(S_proposed, new_Z, new_Y)
                 c=self.get_covariance(s)
+                print(c)
                 #print(np.shape(c))
                 if re.match('[Rr]ate[-_ ][Cc]onstant',self.module0.startup_data['quantity_of_interest']):
                     k_block=self.get_k_block_proposed(S_proposed,S)
@@ -462,7 +466,8 @@ class ranking():
                 
         #print(ranking_list)
         output_ranking=pd.DataFrame(columns=['experiment','ratio'])
-        output_ranking['experiment']=self.module1.yaml_file_list
+        output_ranking['experiment']=final_yamls
+        print(output_ranking)
         output_ranking['ratio']=ranking_list
         output_ranking.sort_values(by='ratio',ascending=True,inplace=True)
         #output_ranking.to_csv(os.path.join(self.module0.startup_data['working_dir'],
