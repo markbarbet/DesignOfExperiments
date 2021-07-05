@@ -32,9 +32,9 @@ class ranking():
         #current_yamls=copy.deepcopy(self.module1.yaml_file_list)
         S_countH=0
         S_countV=0
-        new_Z=None
-        new_Y=None
-        new_X_list=None
+        new_Z=copy.deepcopy(self.module0.initial_optimization.z_data_frame)
+        new_Y=copy.deepcopy(self.module0.initial_optimization.Y_data_frame)
+        new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])
         self.updated_S=copy.deepcopy(self.module0.S_original)
         for i in np.arange(total_iters):
             print(i,"wtf")
@@ -58,25 +58,29 @@ class ranking():
         #                                        self.settings['output-csv']),index=False)    
             self.excluded_yamls=list(final_exp_dataframe['experiment'])
             print('We are in iteration: '+str(i) )
-            self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,countH=S_countH,countV=S_countV)
+            self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,new_Z,new_Y,new_X_list, countH=S_countH,countV=S_countV)
             print('shape')
             print(np.shape(self.updated_S),np.shape(new_Z))
             current_yamls=[]
             for j,item in enumerate(self.module1.yaml_file_list):
                 if item not in self.excluded_yamls:
                     current_yamls=current_yamls+[item]
+        print(np.shape(self.updated_S),np.shape(new_X_list))
+        matrices=pd.DataFrame(data=self.updated_S,columns=new_X_list)
+        matrices['rows']=new_Z['value']
+        matrices.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                'matrices-debugging.csv'),index=False)
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 self.settings['output-csv']),index=False)
             
         
         
-    def get_updated_S(self,S,yamls,countH=0,countV=0):
+    def get_updated_S(self,S,yamls,new_Z,new_Y,new_X_list,countH=0,countV=0):
         
         
         S_countV=countV
         S_countH=countH
-        new_Z=copy.deepcopy(self.module0.initial_optimization.z_data_frame)
-        new_Y=copy.deepcopy(self.module0.initial_optimization.Y_data_frame)
+        
         S_proposed=copy.deepcopy(S)
         for i,file in enumerate(yamls):
             print('Shit '+str(i))
@@ -92,7 +96,7 @@ class ranking():
                                            self.module0.initial_optimization.Y_data_frame,
                                            self.module0.initial_optimization.z_data_frame,
                                            self.module1.matrices[self.module1.yaml_file_list.index(file)]['S'])
-            new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
+            new_X_list=new_X_list+X_to_add
             #print(i,new_Y)
             print('Count H: '+str(S_countH)+', Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length)) 
             S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S_proposed,countV=S_countV,countH=S_countH)
@@ -447,6 +451,7 @@ class ranking():
                 s=self.get_normalized_S(S_proposed, new_Z, new_Y)
                 c=self.get_covariance(s)
                 print(c)
+                self.updated_c=c
                 #print(np.shape(c))
                 if re.match('[Rr]ate[-_ ][Cc]onstant',self.module0.startup_data['quantity_of_interest']):
                     k_block=self.get_k_block_proposed(S_proposed,S)
@@ -462,6 +467,7 @@ class ranking():
                     sigma_list_index=self.get_unique_elements(list(targets['Reaction']),gas).index(target_index)
                     #print(sigma_list[sigma_list_index][0])
                     ranking_list=ranking_list+[sigma_list[sigma_list_index][0]/original_posterior]
+                    #print(sigma_list,'poo')
                 #elif re.match('[Ii]gnition[_ -][Dd]elay',self.module0.startup_data['quantity_of_interest']):
                 
         #print(ranking_list)
