@@ -60,7 +60,7 @@ class ranking():
             print('We are in iteration: '+str(i) )
             self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,countH=S_countH,countV=S_countV)
             print('shape')
-            print(np.shape(self.updated_S))
+            print(np.shape(self.updated_S),np.shape(new_Z))
             current_yamls=[]
             for j,item in enumerate(self.module1.yaml_file_list):
                 if item not in self.excluded_yamls:
@@ -97,7 +97,7 @@ class ranking():
             print('Count H: '+str(S_countH)+', Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length)) 
             S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S_proposed,countV=S_countV,countH=S_countH)
             #S_countH=S_countH+ self.get_prior_phys_param_len(parametersY) 
-            
+            print(np.shape(S_proposed),np.shape(new_Z))
             S_countH=S_countH+len(X_to_add)
             print(X_to_add)
             #if i>0:
