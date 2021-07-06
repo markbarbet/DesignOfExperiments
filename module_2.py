@@ -37,7 +37,7 @@ class ranking():
         new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])
         self.updated_S=copy.deepcopy(self.module0.S_original)
         for i in np.arange(total_iters):
-            print(i,"wtf")
+            #print(i,"wtf")
             if i==0:
                 self.ranking=self.get_rankings(self.excluded_yamls,self.updated_S,i,countH=S_countH, countV=S_countV)
             elif i>0:
@@ -57,22 +57,23 @@ class ranking():
         #final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
         #                                        self.settings['output-csv']),index=False)    
             self.excluded_yamls=list(final_exp_dataframe['experiment'])
-            print('We are in iteration: '+str(i) )
+            #print('We are in iteration: '+str(i) )
             self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,new_Z,new_Y,new_X_list, countH=S_countH,countV=S_countV)
-            print('shape')
-            print(np.shape(self.updated_S),np.shape(new_Z))
+            #print('shape')
+            #print(np.shape(self.updated_S),np.shape(new_Z))
             current_yamls=[]
             for j,item in enumerate(self.module1.yaml_file_list):
                 if item not in self.excluded_yamls:
                     current_yamls=current_yamls+[item]
-        print(np.shape(self.updated_S),np.shape(new_X_list))
+        #print(np.shape(self.updated_S),np.shape(new_X_list))
         matrices=pd.DataFrame(data=self.updated_S,columns=new_X_list)
         matrices['rows']=new_Z['value']
-
-        cov=pd.DataFrame(data=self.updated_c,columns=new_X_list)
-        cov['rows']=new_X_list
-        cov.to_csv(os.path.join(self.module0.startup_data['working_dir'],
-                                                'cov-debugging.csv'),index=False)
+        new_Z.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                'Z.csv'),index=False)
+        #cov=pd.DataFrame(data=self.updated_c,columns=new_X_list)
+        #cov['rows']=new_X_list
+        #cov.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+        #                                        'cov-debugging.csv'),index=False)
         matrices.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 'matrices-debugging.csv'),index=False)
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
@@ -88,7 +89,7 @@ class ranking():
         
         S_proposed=copy.deepcopy(S)
         for i,file in enumerate(yamls):
-            print('Shit '+str(i))
+            #print('Shit '+str(i))
             parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),self.module1.yaml_file_list.index(file))
             new_Z=self.construct_Z_new(parametersZ,new_Z)
             parametersY=self.get_Y(os.path.join(self.module1.input_options['working_dir'],file),self.module1.yaml_file_list.index(file))
@@ -103,17 +104,17 @@ class ranking():
                                            self.module1.matrices[self.module1.yaml_file_list.index(file)]['S'])
             new_X_list=new_X_list+X_to_add
             #print(i,new_Y)
-            print('Count H: '+str(S_countH)+', Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length)) 
+            #print('Count H: '+str(S_countH)+', Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length)) 
             S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S_proposed,countV=S_countV,countH=S_countH)
             #S_countH=S_countH+ self.get_prior_phys_param_len(parametersY) 
-            print(np.shape(S_proposed),np.shape(new_Z))
+            #print(np.shape(S_proposed),np.shape(new_Z))
             S_countH=S_countH+len(X_to_add)
-            print(X_to_add)
+            #print(X_to_add)
             #if i>0:
             S_countV=self.experiment_length+S_countV+len(X_to_add)
             #elif i==0:
             #    S_countV=S_countV+S_countH
-            print('New Count H: '+str(S_countH)+', New Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length))
+            #print('New Count H: '+str(S_countH)+', New Count V: '+str(S_countV)+', Exp Length: '+str(self.experiment_length))
         return (S_proposed,new_Y,new_Z,new_X_list,S_countH,S_countV)
             
         
@@ -304,7 +305,7 @@ class ranking():
         #print(np.shape(Z2))
         block1=np.block([[Z1],[S3],[Z2]])
         block2=np.block([[S1,Z3,S2],[S4,Z4,S5]])
-        print(np.shape(Z2),np.shape(Z3),np.shape(Z4))
+        #print(np.shape(Z2),np.shape(Z3),np.shape(Z4))
         
         #print('S',np.shape(S_old))
         #print('Z1',np.shape(Z1))
@@ -316,10 +317,10 @@ class ranking():
         # print('S4',np.shape(S4))
         # print('Z4',np.shape(Z4))
         # print('S5',np.shape(S5))
-        print(countV)
-        print(np.shape(block1))
-        print(np.shape(block2),'s')
-        print(np.shape(S_old))
+        #print(countV)
+        #print(np.shape(block1))
+        #print(np.shape(block2),'s')
+        #print(np.shape(S_old))
         S=np.block([[S_old,block1],[block2]])
         return S
         
@@ -348,7 +349,7 @@ class ranking():
                                             k_target_values_parsed_csv,
                                             unique_reactions,
                                             gas,
-                                            covarience):
+                                            covariance):
 
             
             reaction_list_from_mechanism = gas.reaction_equations()
@@ -356,8 +357,8 @@ class ranking():
             shape = k_target_value_S_matrix.shape
             #print(unique_reactions)
             for row in range(shape[0]):
-                #print(row)
-                SC = np.dot(k_target_value_S_matrix[row,:],covarience)
+                #print(k_target_value_S_matrix,'blahasfjhbjhb')
+                SC = np.dot(k_target_value_S_matrix[row,:],covariance)
                 sigma_k = np.dot(SC,np.transpose(k_target_value_S_matrix[row,:]))
                 sigma_k = np.sqrt(sigma_k)
                 #print(row)
@@ -442,7 +443,7 @@ class ranking():
                                            self.module0.initial_optimization.z_data_frame,
                                            self.module1.matrices[i]['S'])
                 #print(self.module0.initial_optimization.Y_data_frame['value'][635:])
-                print('CountH: '+str(countH)+', countV: '+str(countV))
+                #print('CountH: '+str(countH)+', countV: '+str(countV))
                 S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S,countH=countH,countV=countV)
                 if iteration==0:
                     new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
@@ -451,15 +452,15 @@ class ranking():
                 #print(list(self.module0.initial_optimization.z_data_frame['value']))
                 #print(np.shape(S_proposed))
                 #print(self.module0.initial_optimization.z_data_frame)
-                print(len(new_Z),np.shape(S_proposed))
+                #print(len(new_Z),np.shape(S_proposed))
                 
                 s=self.get_normalized_S(S_proposed, new_Z, new_Y)
                 c=self.get_covariance(s)
-                print(c)
+                #print(c)
                 self.updated_c=c
                 #print(np.shape(c))
                 if re.match('[Rr]ate[-_ ][Cc]onstant',self.module0.startup_data['quantity_of_interest']):
-                    k_block=self.get_k_block_proposed(S_proposed,S)
+                    k_block=self.get_k_block_proposed(S_proposed,self.module0.S_original)
                     targets=pd.read_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                  self.module0.MSI_settings['rate_constant_targets']))
                     sigma_list=self.calculate_sigmas_for_rate_constants(k_block,
@@ -467,10 +468,11 @@ class ranking():
                                                                         self.get_unique_elements(list(targets['Reaction']),gas),
                                                                         gas,
                                                                         c)
+                    #print(sigma_list)
                     target_reaction=self.module0.startup_data['target_reaction']['equation']
                     target_index=list(gas.reaction_equations()).index(target_reaction)
                     sigma_list_index=self.get_unique_elements(list(targets['Reaction']),gas).index(target_index)
-                    #print(sigma_list[sigma_list_index][0])
+                    #print(sigma_list[sigma_list_index][0],'text')
                     ranking_list=ranking_list+[sigma_list[sigma_list_index][0]/original_posterior]
                     #print(sigma_list,'poo')
                 #elif re.match('[Ii]gnition[_ -][Dd]elay',self.module0.startup_data['quantity_of_interest']):
@@ -478,11 +480,12 @@ class ranking():
         #print(ranking_list)
         output_ranking=pd.DataFrame(columns=['experiment','ratio'])
         output_ranking['experiment']=final_yamls
-        print(output_ranking)
+        #print(output_ranking)
         output_ranking['ratio']=ranking_list
         output_ranking.sort_values(by='ratio',ascending=True,inplace=True)
         #output_ranking.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                              #'output_rankings.csv'),index=False)
+        #print(output_ranking)
         #print(output_ranking)
         return output_ranking
             #posteriors=self.return_posteriors(c,new_Z)
