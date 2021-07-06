@@ -68,6 +68,11 @@ class ranking():
         print(np.shape(self.updated_S),np.shape(new_X_list))
         matrices=pd.DataFrame(data=self.updated_S,columns=new_X_list)
         matrices['rows']=new_Z['value']
+
+        cov=pd.DataFrame(data=self.updated_c,columns=new_X_list)
+        cov['rows']=new_X_list
+        cov.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                'cov-debugging.csv'),index=False)
         matrices.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 'matrices-debugging.csv'),index=False)
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
