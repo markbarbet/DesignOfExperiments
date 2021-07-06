@@ -36,6 +36,7 @@ class ranking():
         new_Y=copy.deepcopy(self.module0.initial_optimization.Y_data_frame)
         new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])
         self.updated_S=copy.deepcopy(self.module0.S_original)
+        self.printProgressBar(0, total_iters, prefix = 'Finding Best Experiments:', suffix = 'Complete', length = 70)
         for i in np.arange(total_iters):
             #print(i,"wtf")
             if i==0:
@@ -65,6 +66,7 @@ class ranking():
             for j,item in enumerate(self.module1.yaml_file_list):
                 if item not in self.excluded_yamls:
                     current_yamls=current_yamls+[item]
+            self.printProgressBar(i + 1, total_iters, prefix = 'Finding Best Experiments:', suffix = 'Complete', length = 70)
         #print(np.shape(self.updated_S),np.shape(new_X_list))
         matrices=pd.DataFrame(data=self.updated_S,columns=new_X_list)
         matrices['rows']=new_Z['value']
@@ -80,7 +82,28 @@ class ranking():
                                                 self.settings['output-csv']),index=False)
             
         
-        
+    # Print iterations progress
+    def printProgressBar(self,iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+        """
+        Call in a loop to create terminal progress bar
+        @params:
+            iteration   - Required  : current iteration (Int)
+            total       - Required  : total iterations (Int)
+            prefix      - Optional  : prefix string (Str)
+            suffix      - Optional  : suffix string (Str)
+            decimals    - Optional  : positive number of decimals in percent complete (Int)
+            length      - Optional  : character length of bar (Int)
+            fill        - Optional  : bar fill character (Str)
+            printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+        """
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filledLength = int(length * iteration // total)
+        bar = fill * filledLength + '-' * (length - filledLength)
+        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+        # Print New Line on Complete
+        if iteration == total: 
+            print()      
+    
     def get_updated_S(self,S,yamls,new_Z,new_Y,new_X_list,countH=0,countV=0):
         
         
