@@ -7,12 +7,15 @@ Created on Mon May 24 15:08:21 2021
 
 
 import os
-from typing import final
+#from typing import final
 import numpy as np
 import re
 import cantera as ct
 import copy
 import pandas as pd
+#import progressbar, time, sys
+import time, sys
+import enlighten
 
 class ranking():
     
@@ -20,7 +23,7 @@ class ranking():
                                                           'total_new_exp':10,
                                                           'output-csv':'output.csv'}):
 
-
+        self.subloopBool=True
         self.module0=module0
         self.module1=module1
         self.settings=settings
@@ -36,7 +39,13 @@ class ranking():
         new_Y=copy.deepcopy(self.module0.initial_optimization.Y_data_frame)
         new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])
         self.updated_S=copy.deepcopy(self.module0.S_original)
-        self.printProgressBar(0, total_iters, prefix = 'Finding Best Experiments:', suffix = 'Complete', length = 70)
+        #self.printProgressBar(0, total_iters, prefix = 'Finding Best Experiments:', suffix = 'Complete', length = 70)
+        #self.down()
+        #total = progressbar.ProgressBar(maxval=total_iters)
+        #total.start()
+        self.manager = enlighten.get_manager()
+        self.mainloop=self.manager.counter(total=total_iters,desc='Overall Progress',unit='batches',color='green')
+        
         for i in np.arange(total_iters):
             #print(i,"wtf")
             if i==0:
@@ -56,7 +65,8 @@ class ranking():
                 #print("Inside second statement")
         #print(final_exp_dataframe)
         #final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
-        #                                        self.settings['output-csv']),index=False)    
+        #                                        self.settings['output-csv']),index=False)  
+
             self.excluded_yamls=list(final_exp_dataframe['experiment'])
             #print('We are in iteration: '+str(i) )
             self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,new_Z,new_Y,new_X_list, countH=S_countH,countV=S_countV)
@@ -66,8 +76,13 @@ class ranking():
             for j,item in enumerate(self.module1.yaml_file_list):
                 if item not in self.excluded_yamls:
                     current_yamls=current_yamls+[item]
-            self.printProgressBar(i + 1, total_iters, prefix = 'Finding Best Experiments:', suffix = 'Complete', length = 70)
+            #total.update(i)
+            self.mainloop.update()
+            #self.printProgressBar(i + 1, total_iters, prefix = 'Finding Best Experiments:', suffix = 'Complete', length = 70)
         #print(np.shape(self.updated_S),np.shape(new_X_list))
+        #total.finish()
+        self.subloop.close()
+        self.manager.stop()
         matrices=pd.DataFrame(data=self.updated_S,columns=new_X_list)
         matrices['rows']=new_Z['value']
         new_Z.to_csv(os.path.join(self.module0.startup_data['working_dir'],
@@ -81,7 +96,17 @@ class ranking():
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 self.settings['output-csv']),index=False)
             
-        
+    def up(self):
+        # My terminal breaks if we don't flush after the escape-code
+        sys.stdout.write('\x1b[1A')
+        sys.stdout.flush()
+
+    def down(self):
+        # I could use '\x1b[1B' here, but newline is faster and easier
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+
+
     # Print iterations progress
     def printProgressBar(self,iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
         """
@@ -417,6 +442,12 @@ class ranking():
         return uniques
     
     def get_rankings(self,excluded_yamls,S,iteration,countH=0,countV=0,Z_prev=None,Y_prev=None,X_prev=None):
+        #self.up()
+        #sub = progressbar.ProgressBar(maxval=len(self.module1.yaml_file_list))
+        #sub.start()
+        #if self.subloopBool:
+        self.subloop=self.manager.counter(total=len(self.module1.yaml_file_list),desc='Possible experiments',unit='Experiments',color='red',leave=True)
+        #self.subloopBool=False
         ranking_list=[]
         self.rownames_nominal,self.colnames_nominal=self.get_S_current_columns(msi_instance=self.module0.initial_optimization)
         self.mech=os.path.join(self.module1.input_options['working_dir'],self.module0.MSI_settings['chemical_model'])
@@ -438,6 +469,7 @@ class ranking():
             original_posterior=sigma_list_og[sigma_list_index][0]
         final_yamls=[]
         for i,file in enumerate(self.module1.yaml_file_list):
+            
             if file not in excluded_yamls:
                 final_yamls.append(file)
                 data=self.module1.load_to_obj(os.path.join(self.module1.input_options['working_dir'],file))
@@ -499,7 +531,10 @@ class ranking():
                     ranking_list=ranking_list+[sigma_list[sigma_list_index][0]/original_posterior]
                     #print(sigma_list,'poo')
                 #elif re.match('[Ii]gnition[_ -][Dd]elay',self.module0.startup_data['quantity_of_interest']):
-                
+            #if np.remainder(i,10)==0:
+                #sub.update(i)
+            self.subloop.update()
+        #sub.finish()
         #print(ranking_list)
         output_ranking=pd.DataFrame(columns=['experiment','ratio'])
         output_ranking['experiment']=final_yamls
