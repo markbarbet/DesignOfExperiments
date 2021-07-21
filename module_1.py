@@ -211,7 +211,7 @@ class potential_experiments():
             mole_sum=0
             for j,species in enumerate(list(self.input_options['mixture_species'].keys())): 
                 template['common-properties']['composition'].append({'species':species,
-                                                                     'mole-fraction':float(round(conditions[species][j],9)),
+                                                                     'mole-fraction':float(round(conditions[species][i],9)),
                                                                      'relative-uncertainty':0.05})
                 mole_sum=mole_sum+conditions[species][j]
                 #Above value of relative uncertainty is not necessary for this procedure, leave unchanged
