@@ -308,7 +308,7 @@ class potential_experiments():
                 conditions[species]=fractions[species]
             conditions['index']=np.arange(1,settings['random_sample_settings']['n']+1)
             #print(conditions)
-            conditions.to_csv(os.join(os.getcwd(),'test_conditions.csv'),index=False)
+            conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
         return conditions
                 
             
