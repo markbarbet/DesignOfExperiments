@@ -97,6 +97,7 @@ class potential_experiments():
         if re.match('[Jj][Ss][Rr]',self.input_options['experiment_type']) or re.match('[Jj]et[- ][Ss]tirred[- ][Rr]eactor',self.input_options['experiment_type']):
             self.exp_type='JSR'
             self.conditions_list=self.JSR_conditions_constructor(self.input_options['constructor_settings'])
+
             self.yaml_file_list=self.JSR_yaml_constructor(self.conditions_list)
             
             if not self.input_options['parallel-computing']:
@@ -307,6 +308,7 @@ class potential_experiments():
                 conditions[species]=fractions[species]
             conditions['index']=np.arange(1,settings['random_sample_settings']['n']+1)
             #print(conditions)
+            conditions.to_csv(os.join(os.getcwd(),'test_conditions.csv'),index=False)
         return conditions
                 
             
