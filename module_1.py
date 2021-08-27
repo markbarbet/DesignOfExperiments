@@ -213,9 +213,10 @@ class potential_experiments():
                 template['common-properties']['composition'].append({'species':species,
                                                                      'mole-fraction':float(round(conditions[species][i],9)),
                                                                      'relative-uncertainty':0.05})
-                mole_sum=mole_sum+conditions[species][j]
+                mole_sum=mole_sum+conditions[species][i]
                 #Above value of relative uncertainty is not necessary for this procedure, leave unchanged
             diluent_value=1.0-mole_sum
+            #print(diluent_value)
             template['common-properties']['composition'].append({'species':self.input_options['diluent'],
                                                                  'mole-fraction':float(round(diluent_value,9)),
                                                                  'relative-uncertainty':0.05})

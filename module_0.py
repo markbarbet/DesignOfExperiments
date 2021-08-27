@@ -11,6 +11,7 @@ import MSI
 import pandas as pd
 import re
 import numpy as np
+import yaml
 
 
 class DoE():
@@ -18,6 +19,7 @@ class DoE():
     
     def __init__(self,startup_data:dict={'experiments':[],
                                          'quantity_of_interest':'',
+                                         'qoi_exp':False,
                                          'yaml_template':'',
                                          'working_dir':'',
                                          'target_reaction':{'temperatures':[1000],
@@ -35,11 +37,15 @@ class DoE():
         if self.experiments:
             if  re.match('[rR]ate[- ][Cc]onstant',self.quantity_of_interest):
                 self.exp_data_rate_constant()
+            elif re.match('[Ii]gnition[-_ ][Dd]elay[-_ ][Tt]ime',self.quantity_of_interest):
+                self.exp_data_no_rate_constant()
             else: 
                 self.exp_data_no_rate_constant()
         elif not self.experiments:
             if  re.match('[rR]ate[- ][Cc]onstant',self.quantity_of_interest):
                 self.startup_rate_constant()
+            elif re.match('[Ii]gnition[-_ ][Dd]elay[-_ ][Tt]ime',self.quantity_of_interest):
+                self.startup_no_rate_constant()
             else: 
                 self.startup_no_rate_constant()
                 
@@ -188,7 +194,37 @@ class DoE():
     def exp_data_no_rate_constant(self):
         '''Simply provide startup_data['experiments']' with the appropriate
            yaml files to run msi'''
-        self.yaml_file_list=self.experiments
+        if re.match('[Ii]gnition[- ][Dd]elay', self.quantity_of_interest):
+            if not self.startup_data['qoi_exp']:
+                '''Code enters this block if there is experimental data but the qoi is not among them'''
+                yaml_class_inst = MSI.simulations.yaml_parser.Parser()
+                yaml_object=yaml_class_inst.load_to_obj(path=self.yaml_template)
+                yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
+                solution=self.run_ignition_delay(yaml_dict)
+                outfile=self.write_fake_csv(os.path.join(self.working_dir,'temp_data.csv'),solution)
+                yaml_dict['csvFiles'].append(outfile)
+                yaml_dict['ignitionDelayCsvFiles'].append(outfile)
+                yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
+                yaml_dict['ignitionDelayAbsoluteUncertainty']=[1.0]
+                with open(self.yaml_template,'w') as f:
+                    yaml.safe_dump(yaml_dict, f,default_flow_style=False)
+                self.yaml_file_list=self.experiments+[self.yaml_template]
+            elif self.startup_data['qoi_exp']:
+                '''Code enters here if the quantity of interest is among the experimental data'''
+                yaml_class_inst = MSI.simulations.yaml_parser.Parser()
+                yaml_object=yaml_class_inst.load_to_obj(path=self.yaml_template)
+                yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
+                solution=self.run_ignition_delay(yaml_dict)
+                outfile=self.write_fake_csv(os.path.join(self.working_dir,'temp_data.csv'),solution)
+                yaml_dict['csvFiles'].append(outfile)
+                yaml_dict['ignitionDelayCsvFiles'].append(outfile)
+                yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
+                yaml_dict['ignitionDelayAbsoluteUncertainty']=[1.0]
+                with open(self.yaml_template,'w') as f:
+                    yaml.safe_dump(yaml_dict, f,default_flow_style=False)
+                self.yaml_file_list=self.experiments+[self.yaml_template]
+
+                #self.yaml_file_list=self.experiments
     
         
     def calculate_uncertainty(self,S,C):

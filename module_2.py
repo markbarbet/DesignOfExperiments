@@ -16,6 +16,7 @@ import pandas as pd
 #import progressbar, time, sys
 import time, sys
 import enlighten
+import yaml
 
 class ranking():
     
@@ -440,7 +441,58 @@ class ranking():
             if index not in uniques:
                 uniques=uniques+[index]
         return uniques
-    
+
+
+
+
+    def calculate_sigma(self,S_row,C):
+        SC = np.dot(S_row,C)
+        sigma = np.dot(SC,np.transpose(S_row))
+        sigma = np.sqrt(sigma)
+        return sigma
+
+
+    def get_ignition_block(self,S):
+
+        ig_block=S[np.shape(self.module0.S_original)[0]-1,:]
+
+        return ig_block
+
+
+    def load_to_obj(self, path:str = ''):
+        """
+        Takes in a file path for a yaml file and returns a dictionary of 
+        simulation information.
+
+        Parameters
+        ----------
+        path : str, optional
+            The path to where the yaml file is stored. The default is ''.
+
+        Returns
+        -------
+        config : dictionary
+            An unorganized dictionary that contains information reguarding
+            the experiment the yaml input file was written for.
+
+        """
+        with open(path) as f:
+            config = yaml.load(f,Loader=yaml.FullLoader)
+        return config
+
+
+    def get_yaml_conditions(self,fname):
+
+        template=self.load_to_obj(fname)
+        outputs={}
+        outputs['temperature']=float(template['common-properties']['temperature']['value-list'][0])
+        outputs['pressure']=float(template['common-properties']['pressure']['value'])
+        outputs['residence-time']=float(template['apparatus']['residence-time']['value'])
+        for i,spec in enumerate(template['common-properties']['composition']):
+            outputs[spec['species']]=spec['mole-fraction']
+        
+        return outputs
+
     def get_rankings(self,excluded_yamls,S,iteration,countH=0,countV=0,Z_prev=None,Y_prev=None,X_prev=None):
         #self.up()
         #sub = progressbar.ProgressBar(maxval=len(self.module1.yaml_file_list))
@@ -467,6 +519,16 @@ class ranking():
             sigma_list_index=self.get_unique_elements(list(targets['Reaction']),gas).index(target_index)
             #print(sigma_list[sigma_list_index][0])
             original_posterior=sigma_list_og[sigma_list_index][0]
+
+        elif re.match('[Ii]gnition[_- ][Dd]elay[_- ][Tt]ime',self.module0.startup_data['quantity_of_interest']):
+            '''This block collects the original uncertainty in the ignition delay quantity of interest. Gets the final experiment line
+               and estimates the uncertainty in the ignition delay.'''
+
+            ig_block_og=self.get_ignition_block(self.module0.S_original)
+
+            sigma_ig=self.calculate_sigma(ig_block_og,self.module0.C_original)
+            original_posterior=sigma_ig
+
         final_yamls=[]
         for i,file in enumerate(self.module1.yaml_file_list):
             
@@ -530,6 +592,10 @@ class ranking():
                     #print(sigma_list[sigma_list_index][0],'text')
                     ranking_list=ranking_list+[sigma_list[sigma_list_index][0]/original_posterior]
                     #print(sigma_list,'poo')
+                elif re.match('[Ii]gnition[-_ ][Dd]elay[_- ][Tt]ime',self.module0.startup_data['quantity_of_interest']):
+                    ig_block=self.get_ignition_block(S_proposed)
+                    sigma=self.calculate_sigma(ig_block,c)
+                    ranking_list=ranking_list+[sigma/original_posterior]
                 #elif re.match('[Ii]gnition[_ -][Dd]elay',self.module0.startup_data['quantity_of_interest']):
             #if np.remainder(i,10)==0:
                 #sub.update(i)
@@ -538,9 +604,34 @@ class ranking():
         #print(ranking_list)
         output_ranking=pd.DataFrame(columns=['experiment','ratio'])
         output_ranking['experiment']=final_yamls
-        #print(output_ranking)
+        temps=[]
+        pres=[]
+        restime=[]
+        conds=self.get_yaml_conditions(os.path.join(self.module0.startup_data['working_dir'],final_yamls[0]))
+        species_index=copy.deepcopy(list(conds.keys()))
+        #print(list(conds.keys()).remove('temperature'))
+        species_index.remove('temperature')
+        species_index.remove('pressure')
+        species_index.remove('residence-time')
+        specs={}
+        for i,spec in enumerate(species_index):
+            specs[spec]=[]
+        for i,fname in enumerate(final_yamls):
+            conds=self.get_yaml_conditions(os.path.join(self.module0.startup_data['working_dir'],fname))
+            temps.append(conds['temperature'])
+            pres.append(conds['pressure'])
+            restime.append(conds['residence-time'])
+            for k,spec in enumerate(species_index):
+                specs[spec].append(conds[spec])
+
         output_ranking['ratio']=ranking_list
+        output_ranking['temperature']=temps
+        output_ranking['pressure']=pres
+        output_ranking['residence-time']=restime
+        for i,spec in enumerate(species_index):
+            output_ranking[spec]=specs[spec]
         output_ranking.sort_values(by='ratio',ascending=True,inplace=True)
+
         #output_ranking.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                              #'output_rankings.csv'),index=False)
         #print(output_ranking)
