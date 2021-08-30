@@ -51,22 +51,31 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
                                                                             files_to_include,
                                                                             reaction_uncertainty_csv,
                                                                             rate_constant_target_value_data)
-        MSI_instance.run_simulations()
+        try:
+            MSI_instance.run_simulations()
+            exclude=''
+            MSI_instance.get_matrices()
         
-        
+            S=MSI_instance.S_matrix
+            #X=MSI_instance.X
+            Z=MSI_instance.z_data_frame
+            Y=MSI_instance.Y_data_frame
+            #print(Z['value'][630:])
+            #print(Y)
+            os.remove(temp_cti)
+            os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
+        except:
+            print('Simulation failed to converge: removing this experiment from YAMLs to try.')
+            exclude=files_to_include[0][0]
+            S=None
+            Y=None
+            Z=None
+            os.remove(temp_cti)
+            #os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
         #self.add_yaml_data()
         
-        MSI_instance.get_matrices()
         
-        S=MSI_instance.S_matrix
-        #X=MSI_instance.X
-        Z=MSI_instance.z_data_frame
-        Y=MSI_instance.Y_data_frame
-        #print(Z['value'][630:])
-        #print(Y)
-        os.remove(temp_cti)
-        os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
-        return {'S':S,'Y':Y,'Z':Z}
+        return {'S':S,'Y':Y,'Z':Z,'excluded_yaml':exclude}
 
 class potential_experiments():
     
@@ -108,6 +117,16 @@ class potential_experiments():
                 args=self.get_args()
                 with multiprocessing.Pool(processes=self.cores) as pool:
                     self.matrices=pool.map(get_matrices_parallel,args)
+                    included_files=[]
+                    included_matrices=[]
+                    for i,mat in enumerate(self.matrices):
+                        if mat['excluded_yaml']=='':
+                            included_files.append(self.yaml_file_list[i])
+                            included_matrices.append(mat)
+                    
+                    self.yaml_file_list=included_files
+                    self.matrices=included_matrices
+                    print(self.yaml_file_list)
                     
                     
             

@@ -534,6 +534,7 @@ class ranking():
             
             if file not in excluded_yamls:
                 final_yamls.append(file)
+                print('File is:'+str(file))
                 data=self.module1.load_to_obj(os.path.join(self.module1.input_options['working_dir'],file))
                 #parametersX,parametersY,parametersZ=self.get_experiment_columns(os.path.join(self.module1.input_options['working_dir'],file),i)
                 parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),i)
