@@ -253,7 +253,7 @@ class potential_experiments():
             template['datapoints']={'mole-fraction':[]}
             for j,species in enumerate(self.input_options['observables']):
                 template['datapoints']['mole-fraction'].append({'csvfile':os.path.join(self.input_options['working_dir'],
-                                                                                       'jsr_simulation_data_'+species+'.csv'),
+                                                                                       self.input_options['yaml_output_name']+str(i+1)+species+'.csv'),
                                                                 'targets':[{'name':species,
                                                                             'species':species,
                                                                             'absolute-uncertainty':5e-5,
