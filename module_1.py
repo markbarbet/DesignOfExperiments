@@ -64,7 +64,8 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             #print(Y)
             os.remove(temp_cti)
             os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
-        except:
+        except Exception as e:
+            print(e)
             print('Simulation failed to converge: removing this experiment from YAMLs to try.')
             exclude=files_to_include[0][0]
             S=None
