@@ -15,6 +15,7 @@ import numpy as np
 import module_0 as m0
 import multiprocessing
 from shutil import copyfile
+import traceback
 
 def get_matrices_parallel(arg):
         file=arg[0]
@@ -66,6 +67,7 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
         except Exception as e:
             print(e)
+            print(traceback.format_exc())
             print('Simulation failed to converge: removing this experiment from YAMLs to try.')
             exclude=files_to_include[0][0]
             S=None
