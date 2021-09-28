@@ -9,7 +9,8 @@ Created on Thu May 20 14:46:37 2021
 import module_0
 import module_1
 import module_2
-import sys,os
+import sys
+import os
 import fire
 import yaml
 import re
@@ -106,6 +107,8 @@ class design_of_experiments():
         #self.module_1_input['yaml_template']=self.module_0_input['yaml_template']
         self.module_1_input['working_dir']=self.module_0_input['working_dir']
         self.module_1_input['observables']=self.input_options['new_experiments']['observables']
+        self.module_1_input['observables_abs_uncertainties']=self.input_options['new_experiments']['observables_abs_uncertainties']
+        self.module_1_input['observables_rel_uncertainties']=self.input_options['new_experiments']['observables_rel_uncertainties']
         for i,item in enumerate(self.module_1_input['observables']):
             if not item:
                 self.module_1_input['observables'][i]='NO'

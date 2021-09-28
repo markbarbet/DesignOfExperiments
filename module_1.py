@@ -86,6 +86,8 @@ class potential_experiments():
     def __init__(self,input_options:dict={'initialization':None,
                                           'experiment_type':'JSR',
                                           'observables':['H2','O2'],
+                                          'observables_abs_uncertainties':[0.00005,0.00005],
+                                          'observables_rel_uncertainties':[0.05,0.05],
                                           'temperature_range':[600,1150], 
                                           'pressure_range':[1.0],
                                           'residence_time':[1.2],
@@ -258,8 +260,8 @@ class potential_experiments():
                                                                                        self.input_options['yaml_output_name']+str(i+1)+'_'+species+'.csv'),
                                                                 'targets':[{'name':species,
                                                                             'species':species,
-                                                                            'absolute-uncertainty':5e-5,
-                                                                            'relative-uncertainty':0.05}]})
+                                                                            'absolute-uncertainty':self.input_options['observables_abs_uncertainties'][j],
+                                                                            'relative-uncertainty':self.input_options['observables_rel_uncertainties'][j]}]})
             template['datapoints']['concentration']=[]
             template['datapoints']['concentration'].append({'csvfile':None,
                                                      'targets':[{'name':None,
