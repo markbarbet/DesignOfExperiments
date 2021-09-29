@@ -89,8 +89,11 @@ class potential_experiments():
                                           'observables_abs_uncertainties':[0.00005,0.00005],
                                           'observables_rel_uncertainties':[0.05,0.05],
                                           'temperature_range':[600,1150], 
+                                          'temperature-uncertainty': 0.01,
                                           'pressure_range':[1.0],
+                                          'pressure-uncertainty': 0.01,
                                           'residence_time':[1.2],
+                                          'restime-uncertainty': 0.02,
                                           'mixture_species':{'H2':[0.001,0.02],'O2':[0.001,0.05]},
                                           'diluent':'Ar',
                                           'constructor_settings':{'intervals':{'species':{'all'},
@@ -228,9 +231,12 @@ class potential_experiments():
         for i,index in enumerate(conditions['index']):
             
             template['common-properties']['temperature']['value-list']=[float(round(conditions['temperatures'][i],9))]
+            template['common-properties']['temperature']['relative-uncertainty']=float(self.input_options['temperature-uncertainty'])
             template['common-properties']['pressure']['value']=float(round(conditions['pressures'][i],9))
+            template['common-properties']['pressure']['relative-uncertainty']=float(self.input_options['pressure-uncertainty'])
             #print(template['apparatus'])
             template['apparatus']['residence-time']['value']=float(round(conditions['restimes'][i],9))
+            template['apparatus']['residence-time']['relative-uncertainty']=float(self.input_options['restime-uncertainty'])
             template['common-properties']['composition']=[]
             mole_sum=0
             for j,species in enumerate(list(self.input_options['mixture_species'].keys())): 
