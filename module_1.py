@@ -76,7 +76,15 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             os.remove(temp_cti)
             #os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
         #self.add_yaml_data()
-        
+        newfile=None
+        temp_cti=None
+        original_cti=None
+        working_directory=None
+        files_to_include=None
+        cti_file=None
+        yaml_list=None
+        working_dir=None
+        reaction_uncertainty_csv=None
         MSI_instance=None
         return {'S':S,'Y':Y,'Z':Z,'excluded_yaml':exclude}
 
