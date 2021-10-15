@@ -77,7 +77,7 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             #os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
         #self.add_yaml_data()
         
-        
+        MSI_instance=None
         return {'S':S,'Y':Y,'Z':Z,'excluded_yaml':exclude}
 
 class potential_experiments():
@@ -118,13 +118,14 @@ class potential_experiments():
             self.yaml_file_list=self.JSR_yaml_constructor(self.conditions_list)
             
             if not self.input_options['parallel-computing']:
-                self.matrices=self.get_matrices()
+                self.matrices=self.get_matrices()  
                 
             elif self.input_options['parallel-computing']:
                 self.cores=input_options['cores']
                 args=self.get_args()
                 with multiprocessing.Pool(processes=self.cores) as pool:
                     self.matrices=pool.map(get_matrices_parallel,args)
+
                     included_files=[]
                     included_matrices=[]
                     for i,mat in enumerate(self.matrices):
