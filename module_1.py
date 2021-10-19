@@ -132,7 +132,7 @@ class potential_experiments():
                 self.cores=input_options['cores']
                 args=self.get_args()
                 with multiprocessing.Pool(processes=self.cores) as pool:
-                    self.matrices=pool.map(get_matrices_parallel,args)
+                    self.matrices=pool.map(get_matrices_parallel,args,chunksize=10)
 
                     included_files=[]
                     included_matrices=[]
