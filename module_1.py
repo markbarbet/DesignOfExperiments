@@ -134,7 +134,7 @@ class potential_experiments():
                 div_args=list(self.divide_list(args,10000))
                 self.matrices=[]
                 for count, item in enumerate(div_args):
-                    with multiprocessing.Pool(processes==self.cores) as pool:
+                    with multiprocessing.Pool(processes=self.cores) as pool:
                         temp_mat=pool.map(get_matrices_parallel,item)
                     self.matrices=self.matrices+temp_mat
                 #with multiprocessing.Pool(processes=self.cores) as pool:
