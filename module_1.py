@@ -131,22 +131,32 @@ class potential_experiments():
             elif self.input_options['parallel-computing']:
                 self.cores=input_options['cores']
                 args=self.get_args()
-                with multiprocessing.Pool(processes=self.cores) as pool:
-                    self.matrices=pool.map(get_matrices_parallel,args,chunksize=10)
+                div_args=list(self.divide_list(args,10000))
+                self.matrices=[]
+                for count, item in enumerate(div_args):
+                    with multiprocessing.Pool(processes==self.cores) as pool:
+                        temp_mat=pool.map(get_matrices_parallel,item)
+                    self.matrices=self.matrices+temp_mat
+                #with multiprocessing.Pool(processes=self.cores) as pool:
+                #    self.matrices=pool.map(get_matrices_parallel,args,chunksize=10)
 
-                    included_files=[]
-                    included_matrices=[]
-                    for i,mat in enumerate(self.matrices):
-                        if mat['excluded_yaml']=='':
-                            included_files.append(self.yaml_file_list[i])
-                            included_matrices.append(mat)
+                included_files=[]
+                included_matrices=[]
+                for i,mat in enumerate(self.matrices):
+                    if mat['excluded_yaml']=='':
+                        included_files.append(self.yaml_file_list[i])
+                        included_matrices.append(mat)
                     
-                    self.yaml_file_list=included_files
-                    self.matrices=included_matrices
-                    print(self.yaml_file_list)
+                self.yaml_file_list=included_files
+                self.matrices=included_matrices
+                    #print(self.yaml_file_list)
                     
                     
-            
+    def divide_list(self,arglist,n):
+        for i in range(0,len(arglist),n):
+            yield arglist[i:i+n]
+
+    
     def get_args(self):
         
         args=[]
