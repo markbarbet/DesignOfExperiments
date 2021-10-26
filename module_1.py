@@ -385,14 +385,43 @@ class potential_experiments():
             conditions['pressures']=data_gen[:,1]
             conditions['restimes']=data_gen[:,2]
             for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
-                conditions[species]=data_gen[:,i]
+                conditions[species]=data_gen[:,i+3]
+            conditions['index']=np.arange(1,settings['random_sample_settings']['n']+1)
+            conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
+
+        elif re.match('[Ss]obol[-_ ][Ss]ampling',settings['method']):
+            import sobol_seq
+            dimension=3+len(list(self.input_options['mixture_species'].keys()))
+            data_gen=sobol_seq.i4_sobol_generate(dimension,settings['random_sample_settings']['n'])
+            #Now need to project the data along the species, temperature, pressure, residence time ranges
+            
+            #Normalizing across temperature range
+            data_gen[:,0]=data_gen[:,0]*(self.input_options['temperature_range'][1]-self.input_options['temperature_range'][0])+self.input_options['temperature_range'][0]
+
+            #Normalizing across pressure range
+            data_gen[:,1]=data_gen[:,1]*(self.input_options['pressure_range'][1]-self.input_options['pressure_range'][0])+self.input_options['pressure_range'][0]
+
+            #Normalize across residence time range
+            data_gen[:,2]=data_gen[:,2]*(self.input_options['residence_time'][1]-self.input_options['residence_time'][0])+self.input_options['residence_time'][0]
+
+            #Normalize across species ranges
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                data_gen[:,i+3]=data_gen[:,i+3]*(self.input_options['mixture_species'][species][1]-self.input_options['mixture_species'][species][0])+self.input_options['mixture_species'][species][0]
+
+            conditions['temperatures']=data_gen[:,0]
+            conditions['pressures']=data_gen[:,1]
+            conditions['restimes']=data_gen[:,2]
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                conditions[species]=data_gen[:,i+3]
+            conditions['index']=np.arange(1,settings['random_sample_settings']['n']+1)
             conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
 
         return conditions
 
     def halton(self, dim: int, nbpts: int):
-        h = numpy.full(nbpts * dim, numpy.nan)
-        p = numpy.full(nbpts, numpy.nan)
+        import math
+        h = np.full(nbpts * dim, np.nan)
+        p = np.full(nbpts, np.nan)
         P = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]
         lognbpts = math.log(nbpts + 1)
         for i in range(dim):
@@ -410,6 +439,8 @@ class potential_experiments():
 
                 h[j*dim + i] = sum_
         return h.reshape(nbpts, dim)
+
+    
                 
             
             
