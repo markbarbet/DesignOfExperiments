@@ -360,7 +360,7 @@ class potential_experiments():
             #print(conditions)
             conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
 
-        elif re.match('[Ll]og[-_ ][Hh]alton[_- ][Ss]ampling',settings['method']):
+        elif re.match('[Ll]og[-_ ][Hh]alton[-_ ][Ss]ampling',settings['method']):
             dimension=3+len(list(self.input_options['mixture_species'].keys()))
             data_gen=self.halton(dim=dimension, nbpts=settings['random_sample_settings']['n'])
             #Normalizing across temperature range
@@ -388,7 +388,7 @@ class potential_experiments():
             conditions['index']=np.arange(1,settings['random_sample_settings']['n']+1)
             conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
 
-        elif re.match('[Ll]og[-_ ][Ss]obol[_- ][Ss]ampling',settings['method']):
+        elif re.match('[Ll]og[-_ ][Ss]obol[-_ ][Ss]ampling',settings['method']):
             import sobol_seq
             dimension=3+len(list(self.input_options['mixture_species'].keys()))
             data_gen=sobol_seq.i4_sobol_generate(dimension,settings['random_sample_settings']['n'])
@@ -407,7 +407,7 @@ class potential_experiments():
                 high_limit=np.log10(self.input_options['mixture_species'][species][1])
                 data_gen[:,i+3]=(data_gen[:,i+3]*(high_limit-low_limit)+low_limit)
                 data_gen[:,i+3]=np.power(10,data_gen[:,i+3])
-                
+
             conditions['temperatures']=data_gen[:,0]
             conditions['pressures']=data_gen[:,1]
             conditions['restimes']=data_gen[:,2]
