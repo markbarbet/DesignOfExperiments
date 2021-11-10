@@ -154,8 +154,43 @@ class design_of_experiments():
                                                       self.input_options['new_experiments']['residence_time']['high']]
             self.module_1_input['restime-uncertainty']=self.input_options['new_experiments']['residence_time']['uncertainty']
 
+
+        elif re.match('[Ll]og[-_ ][Hh]alton[-_ ][Ss]ampling',self.input_options['new_experiments']['constructor_settings']['method']):
+            self.module_1_input['constructor_settings']['method']='log_halton_sampling'
+            
+            self.module_1_input['temperature_range']=[self.input_options['new_experiments']['temperature_range']['low'],
+                                                      self.input_options['new_experiments']['temperature_range']['high']]
+            self.module_1_input['temperature-uncertainty']=self.input_options['new_experiments']['temperature_range']['uncertainty']
+            self.module_1_input['pressure_range']=[self.input_options['new_experiments']['pressure_range']['low'],
+                                                      self.input_options['new_experiments']['pressure_range']['high']]
+            self.module_1_input['pressure-uncertainty']=self.input_options['new_experiments']['pressure_range']['uncertainty']
+            self.module_1_input['mixture_species']={}
+            for i,dic in enumerate(self.input_options['new_experiments']['mixture_species']):
+                self.module_1_input['mixture_species'][dic['species']]=[dic['low'],dic['high']]
+            self.module_1_input['constructor_settings']['random_sample_settings']['n']=self.input_options['new_experiments']['constructor_settings']['random_sample_size']
+            self.module_1_input['residence_time']=[self.input_options['new_experiments']['residence_time']['low'],
+                                                      self.input_options['new_experiments']['residence_time']['high']]
+            self.module_1_input['restime-uncertainty']=self.input_options['new_experiments']['residence_time']['uncertainty']
+
         elif re.match('[Ss]obol[-_ ][Ss]ampling',self.input_options['new_experiments']['constructor_settings']['method']):
             self.module_1_input['constructor_settings']['method']='sobol_sampling'
+            
+            self.module_1_input['temperature_range']=[self.input_options['new_experiments']['temperature_range']['low'],
+                                                      self.input_options['new_experiments']['temperature_range']['high']]
+            self.module_1_input['temperature-uncertainty']=self.input_options['new_experiments']['temperature_range']['uncertainty']
+            self.module_1_input['pressure_range']=[self.input_options['new_experiments']['pressure_range']['low'],
+                                                      self.input_options['new_experiments']['pressure_range']['high']]
+            self.module_1_input['pressure-uncertainty']=self.input_options['new_experiments']['pressure_range']['uncertainty']
+            self.module_1_input['mixture_species']={}
+            for i,dic in enumerate(self.input_options['new_experiments']['mixture_species']):
+                self.module_1_input['mixture_species'][dic['species']]=[dic['low'],dic['high']]
+            self.module_1_input['constructor_settings']['random_sample_settings']['n']=self.input_options['new_experiments']['constructor_settings']['random_sample_size']
+            self.module_1_input['residence_time']=[self.input_options['new_experiments']['residence_time']['low'],
+                                                      self.input_options['new_experiments']['residence_time']['high']]
+            self.module_1_input['restime-uncertainty']=self.input_options['new_experiments']['residence_time']['uncertainty']
+
+        elif re.match('[Ll]og[_ -][Ss]obol[-_ ][Ss]ampling',self.input_options['new_experiments']['constructor_settings']['method']):
+            self.module_1_input['constructor_settings']['method']='log_sobol_sampling'
             
             self.module_1_input['temperature_range']=[self.input_options['new_experiments']['temperature_range']['low'],
                                                       self.input_options['new_experiments']['temperature_range']['high']]

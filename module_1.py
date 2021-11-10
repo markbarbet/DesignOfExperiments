@@ -360,6 +360,62 @@ class potential_experiments():
             #print(conditions)
             conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
 
+        elif re.match('[Ll]og[-_ ][Hh]alton[_- ][Ss]ampling',settings['method']):
+            dimension=3+len(list(self.input_options['mixture_species'].keys()))
+            data_gen=self.halton(dim=dimension, nbpts=settings['random_sample_settings']['n'])
+            #Normalizing across temperature range
+            data_gen[:,0]=data_gen[:,0]*(self.input_options['temperature_range'][1]-self.input_options['temperature_range'][0])+self.input_options['temperature_range'][0]
+
+            #Normalizing across pressure range
+            data_gen[:,1]=data_gen[:,1]*(self.input_options['pressure_range'][1]-self.input_options['pressure_range'][0])+self.input_options['pressure_range'][0]
+
+            #Normalize across residence time range
+            data_gen[:,2]=data_gen[:,2]*(self.input_options['residence_time'][1]-self.input_options['residence_time'][0])+self.input_options['residence_time'][0]
+
+            #Normalize across species ranges
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                low_limit=np.log10(self.input_options['mixture_species'][species][0])
+                high_limit=np.log10(self.input_options['mixture_species'][species][1])
+                
+                data_gen[:,i+3]=(data_gen[:,i+3]*(high_limit-low_limit)+low_limit)
+                data_gen[:,i+3]=np.power(10,data_gen[:,i+3])
+
+            conditions['temperatures']=data_gen[:,0]
+            conditions['pressures']=data_gen[:,1]
+            conditions['restimes']=data_gen[:,2]
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                conditions[species]=data_gen[:,i+3]
+            conditions['index']=np.arange(1,settings['random_sample_settings']['n']+1)
+            conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
+
+        elif re.match('[Ll]og[-_ ][Ss]obol[_- ][Ss]ampling',settings['method']):
+            import sobol_seq
+            dimension=3+len(list(self.input_options['mixture_species'].keys()))
+            data_gen=sobol_seq.i4_sobol_generate(dimension,settings['random_sample_settings']['n'])
+            #Normalizing across temperature range
+            data_gen[:,0]=data_gen[:,0]*(self.input_options['temperature_range'][1]-self.input_options['temperature_range'][0])+self.input_options['temperature_range'][0]
+
+            #Normalizing across pressure range
+            data_gen[:,1]=data_gen[:,1]*(self.input_options['pressure_range'][1]-self.input_options['pressure_range'][0])+self.input_options['pressure_range'][0]
+
+            #Normalize across residence time range
+            data_gen[:,2]=data_gen[:,2]*(self.input_options['residence_time'][1]-self.input_options['residence_time'][0])+self.input_options['residence_time'][0]
+
+            #Normalize across species ranges
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                low_limit=np.log10(self.input_options['mixture_species'][species][0])
+                high_limit=np.log10(self.input_options['mixture_species'][species][1])
+                data_gen[:,i+3]=(data_gen[:,i+3]*(high_limit-low_limit)+low_limit)
+                data_gen[:,i+3]=np.power(10,data_gen[:,i+3])
+                
+            conditions['temperatures']=data_gen[:,0]
+            conditions['pressures']=data_gen[:,1]
+            conditions['restimes']=data_gen[:,2]
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                conditions[species]=data_gen[:,i+3]
+            conditions['index']=np.arange(1,settings['random_sample_settings']['n']+1)
+            conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)
+
 
         elif re.match('[Hh]alton[-_ ][Ss]ampling',settings['method']):
             #first need to get dimension count
@@ -419,6 +475,7 @@ class potential_experiments():
         return conditions
 
     def halton(self, dim: int, nbpts: int):
+        #print('Hi Mark the TA, can you explain to me how the Second Law of Thermodynamics can be applied to my everyday life?')
         import math
         h = np.full(nbpts * dim, np.nan)
         p = np.full(nbpts, np.nan)
