@@ -220,14 +220,25 @@ class design_of_experiments():
         self.module_1_input['parallel-computing']=self.input_options['new_experiments']['parallel-computation']
         #print(type(self.module_1_input['parallel-computing']))
         self.module_1_input['cores']=int(self.input_options['new_experiments']['cores'])
-    
+
+
+    def get_qoi_exp(self):
+        if self.module_0_input['yaml_template']==None and self.module_0_input['experiments']==[]:
+            print('Error: No experiment template for predicting priors, and no prior experiments included')
+        elif self.module_0_input['yaml_template']==None and not self.module_0_input['experiments']==[]:
+            print('Assume first file in the prior experiments contains quantity of interest to be calculated')
+            self.module_0_input['qoi_exp']=True
+        elif self.module_0_input['yaml_template']!=None:
+            self.module_0_input['qoi_exp']=False
+
     def get_parameters(self):
         self.module_0_input={}
         
         self.get_prior_experiments()
         self.get_QoI()
-        self.get_yaml_template()
         
+        self.get_yaml_template()
+        self.get_qoi_exp()
         self.get_working_dir()
         self.get_target_reaction()
         self.get_MSI_settings()
