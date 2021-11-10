@@ -198,7 +198,7 @@ class DoE():
             if not self.startup_data['qoi_exp']:
                 '''Code enters this block if there is experimental data but the qoi is not among them'''
                 yaml_class_inst = MSI.simulations.yaml_parser.Parser()
-                print(self.yaml_template)
+                
                 yaml_object=yaml_class_inst.load_to_obj(path=self.yaml_template)
                 yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
                 solution=self.run_ignition_delay(yaml_dict)
@@ -213,6 +213,7 @@ class DoE():
             elif self.startup_data['qoi_exp']:
                 '''Code enters here if the quantity of interest is among the experimental data'''
                 yaml_class_inst = MSI.simulations.yaml_parser.Parser()
+                print(self.yaml_template)
                 yaml_object=yaml_class_inst.load_to_obj(path=self.yaml_template)
                 yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
                 solution=self.run_ignition_delay(yaml_dict)
