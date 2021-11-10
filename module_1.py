@@ -375,7 +375,7 @@ class potential_experiments():
             #Normalize across species ranges
             for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
                 low_limit=np.log10(self.input_options['mixture_species'][species][0])
-                if low_limit==0.0:
+                if np.isneginf(low_limit):
                     low_limit=-6.0
                 high_limit=np.log10(self.input_options['mixture_species'][species][1])
                 
@@ -407,7 +407,7 @@ class potential_experiments():
             for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
                 low_limit=np.log10(self.input_options['mixture_species'][species][0])
                 high_limit=np.log10(self.input_options['mixture_species'][species][1])
-                if low_limit==0.0:
+                if np.isneginf(low_limit):
                     low_limit=-6.0
                 data_gen[:,i+3]=(data_gen[:,i+3]*(high_limit-low_limit)+low_limit)
                 data_gen[:,i+3]=np.power(10,data_gen[:,i+3])
