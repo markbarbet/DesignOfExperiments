@@ -227,9 +227,9 @@ class design_of_experiments():
             print('Error: No experiment template for predicting priors, and no prior experiments included')
         elif self.module_0_input['yaml_template']==None and not self.module_0_input['experiments']==[]:
             print('Assume first file in the prior experiments contains quantity of interest to be calculated')
-            self.module_0_input['qoi_exp']=True
-        elif self.module_0_input['yaml_template']!=None:
             self.module_0_input['qoi_exp']=False
+        elif self.module_0_input['yaml_template']!=None:
+            self.module_0_input['qoi_exp']=True
 
     def get_parameters(self):
         self.module_0_input={}
