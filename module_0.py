@@ -228,6 +228,7 @@ class DoE():
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
                 yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
                 yaml_dict['ignitionDelayAbsoluteUncertainty']=[1.0]
+                print(self.yaml_template)
                 with open(self.yaml_template,'w') as f:
                     yaml.safe_dump(yaml_dict, f,default_flow_style=False)
                 self.yaml_file_list=self.experiments+[self.yaml_template]
