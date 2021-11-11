@@ -151,7 +151,7 @@ class DoE():
                                                                                 observables=conditions['observables'], 
                                                                                 kineticSens=0, 
                                                                                 physicalSens=0, 
-                                                                                conditions=conditions['conditions'], 
+                                                                                conditions=conditions['conditions_to_run'], 
                                                                                 thermalBoundary=conditions['thermalBoundary'], 
                                                                                 mechanicalBoundary=conditions['mechanicalBoundary'],
                                                                                 processor = p,
