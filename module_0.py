@@ -140,6 +140,11 @@ class DoE():
         
     def run_ignition_delay(self,conditions:dict):
         p = MSI.cti_core.cti_processor.Processor(os.path.join(self.startup_data['working_dir'],self.MSI_settings['chemical_model']))
+        print(conditions['pressures'])
+        print(conditions['temperatures'])
+        print(conditions['observables'])
+        print(conditions['conditions'])
+        print(conditions['target_type'])
         sim = MSI.simulations.instruments.ignition_delay.ignition_delay_wrapper(pressures=conditions['pressures'],
                                                                                 temperatures=conditions['temperatures'],
                                                                                 observables=conditions['observables'], 
