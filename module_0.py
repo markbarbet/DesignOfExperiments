@@ -159,7 +159,7 @@ class DoE():
                                                                                 target=conditions['target'],
                                                                                 target_type=conditions['target_type'],
                                                                                 save_physSensHistories=0,
-                                                                                save_timeHistories=1)
+                                                                                save_timeHistories=1,fullParsedYamlFile=conditions)
         solution,trash=sim.run()
         return solution
         
