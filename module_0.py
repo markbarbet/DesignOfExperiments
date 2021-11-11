@@ -208,7 +208,7 @@ class DoE():
                 yaml_object=yaml_class_inst.load_to_obj(path=self.yaml_template)
                 yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
                 solution=self.run_ignition_delay(yaml_dict)
-                outfile=self.write_fake_csv(os.path.join(self.working_dir,'temp_data.csv'),solution)
+                outfile=self.write_fake_csv(os.path.join(self.startup_data['working_dir'],'temp_data.csv'),solution)
                 yaml_dict['csvFiles'].append(outfile)
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
                 yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
@@ -223,7 +223,7 @@ class DoE():
                 yaml_object=yaml_class_inst.load_to_obj(path=os.path.join(self.startup_data['working_dir'],self.experiments[0][0]))
                 yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
                 solution=self.run_ignition_delay(yaml_dict)
-                outfile=self.write_fake_csv(os.path.join(self.working_dir,'temp_data.csv'),solution)
+                outfile=self.write_fake_csv(os.path.join(self.startup_data['working_dir'],'temp_data.csv'),solution)
                 yaml_dict['csvFiles'].append(outfile)
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
                 yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
