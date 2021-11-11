@@ -145,6 +145,7 @@ class DoE():
         print(conditions['observables'])
         print(conditions['conditions'])
         print(conditions['target_type'])
+        print(conditions['target'])
         sim = MSI.simulations.instruments.ignition_delay.ignition_delay_wrapper(pressures=conditions['pressures'],
                                                                                 temperatures=conditions['temperatures'],
                                                                                 observables=conditions['observables'], 
