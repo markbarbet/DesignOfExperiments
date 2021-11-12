@@ -210,6 +210,7 @@ class DoE():
                 yaml_object=yaml_class_inst.load_to_obj(path=os.path.join(self.startup_data['working_dir'],self.yaml_template[0]))
                 yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
                 solution=self.run_ignition_delay(yaml_dict)
+                solution.rename(columns={'delay':'tau_s'},inplace=True)
                 outfile=self.write_fake_csv(os.path.join(self.startup_data['working_dir'],'temp_data.csv'),solution)
                 yaml_dict['csvFiles'].append(outfile)
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
@@ -218,7 +219,7 @@ class DoE():
                 with open(os.path.join(self.startup_data['working_dir'],self.yaml_template[0])) as f:
                     yaml_file = yaml.load(f,Loader=yaml.FullLoader)
                 
-                print(yaml_file)
+                #print(yaml_file)
                 yaml_file['datapoints']['ignition-delay'][0]['csvfile']=outfile
                 yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['name']='tau'
                 yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['observable']='tau'

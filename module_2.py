@@ -453,8 +453,9 @@ class ranking():
 
 
     def get_ignition_block(self,S):
+        exp_len=self.get_prior_exp_len(self.module0.initial_optimization.Y_data_frame)
 
-        ig_block=S[np.shape(self.module0.S_original)[0]-1,:]
+        ig_block=S[exp_len-1,:]
 
         return ig_block
 
