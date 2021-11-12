@@ -207,7 +207,7 @@ class DoE():
                 '''Code enters this block if there is experimental data but the qoi is not among them'''
                 yaml_class_inst = MSI.simulations.yaml_parser.Parser()
                 #print(self.yaml_template)
-                yaml_object=yaml_class_inst.load_to_obj(path=os.path.join(self.startup_data['working_dir'],self.yaml_template))
+                yaml_object=yaml_class_inst.load_to_obj(path=os.path.join(self.startup_data['working_dir'],self.yaml_template[0]))
                 yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
                 solution=self.run_ignition_delay(yaml_dict)
                 outfile=self.write_fake_csv(os.path.join(self.startup_data['working_dir'],'temp_data.csv'),solution)
@@ -215,7 +215,7 @@ class DoE():
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
                 yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
                 yaml_dict['ignitionDelayAbsoluteUncertainty']=[1.0]
-                with open(self.yaml_template,'w') as f:
+                with open(os.path.join(self.startup_data['working_dir'],self.yaml_template[0]),'w') as f:
                     yaml.safe_dump(yaml_dict, f,default_flow_style=False)
                 self.yaml_file_list=self.experiments+[self.yaml_template]
             elif self.startup_data['qoi_exp']:
