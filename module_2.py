@@ -520,7 +520,7 @@ class ranking():
             #print(sigma_list[sigma_list_index][0])
             original_posterior=sigma_list_og[sigma_list_index][0]
 
-        elif re.match('[Ii]gnition[_- ][Dd]elay[_- ][Tt]ime',self.module0.startup_data['quantity_of_interest']):
+        elif re.match('[Ii]gnition[-_ ][Dd]elay[-_ ][Tt]ime',self.module0.startup_data['quantity_of_interest']):
             '''This block collects the original uncertainty in the ignition delay quantity of interest. Gets the final experiment line
                and estimates the uncertainty in the ignition delay.'''
 
@@ -593,7 +593,7 @@ class ranking():
                     #print(sigma_list[sigma_list_index][0],'text')
                     ranking_list=ranking_list+[sigma_list[sigma_list_index][0]/original_posterior]
                     #print(sigma_list,'poo')
-                elif re.match('[Ii]gnition[-_ ][Dd]elay[_- ][Tt]ime',self.module0.startup_data['quantity_of_interest']):
+                elif re.match('[Ii]gnition[-_ ][Dd]elay[-_ ][Tt]ime',self.module0.startup_data['quantity_of_interest']):
                     ig_block=self.get_ignition_block(S_proposed)
                     sigma=self.calculate_sigma(ig_block,c)
                     ranking_list=ranking_list+[sigma/original_posterior]
