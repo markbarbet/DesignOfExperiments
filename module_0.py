@@ -211,6 +211,7 @@ class DoE():
                 yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
                 solution=self.run_ignition_delay(yaml_dict)
                 solution.rename(columns={'delay':'tau_s'},inplace=True)
+                solution=solution[['temperature','tau_s','pressure']]
                 outfile=self.write_fake_csv(os.path.join(self.startup_data['working_dir'],'temp_data.csv'),solution)
                 yaml_dict['csvFiles'].append(outfile)
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
