@@ -51,7 +51,7 @@ class DoE():
                 
         self.initial_optimization = self.run_msi(rate_constant_target_value_data=self.MSI_settings['rate_constant_targets'])   
         print(self.initial_optimization.z_data_frame)     
-        break
+        wait=input("Press enter to continue")
         self.S_original=self.initial_optimization.S_matrix
         self.C_original=self.initial_optimization.covarience        
         self.uncertainties=self.calculate_uncertainty(self.S_original,self.C_original)
