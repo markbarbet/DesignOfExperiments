@@ -215,8 +215,14 @@ class DoE():
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
                 yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
                 yaml_dict['ignitionDelayAbsoluteUncertainty']=[1.0]
+                yaml_file=yaml.load(os.path.join(self.startup_data['working_dir'],self.yaml_template[0]),Loader=yaml.FullLoader)
+                yaml_file['datapoints']['ignition-delay'][0]['csvfile']=outfile
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['name']='tau'
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['observable']='tau'
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['relative-uncertainty']= 10000
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['absolute-uncertainty']=1.0
                 with open(os.path.join(self.startup_data['working_dir'],self.yaml_template[0]),'w') as f:
-                    yaml.safe_dump(yaml_dict, f,default_flow_style=False)
+                    yaml.safe_dump(yaml_file, f,default_flow_style=False)
                 self.yaml_file_list=self.experiments+[self.yaml_template]
             elif self.startup_data['qoi_exp']:
                 '''Code enters here if the quantity of interest is among the experimental data'''
