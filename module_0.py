@@ -270,7 +270,7 @@ class DoE():
         rate_constant_target_value_data = rate_constant_target_value_data
         #print(rate_constant_target_value_data)
         
-        
+        print(files_to_include)
         MSI_instance = MSI.optimization.optimization_shell.MSI_optimization(cti_file,
                                                                             0.01,
                                                                             1,
