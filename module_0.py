@@ -215,7 +215,9 @@ class DoE():
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
                 yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
                 yaml_dict['ignitionDelayAbsoluteUncertainty']=[1.0]
-                yaml_file=yaml.load(os.path.join(self.startup_data['working_dir'],self.yaml_template[0]),Loader=yaml.FullLoader)
+                with open(os.path.join(self.startup_data['working_dir'],self.yaml_template[0])) as f:
+                    yaml_file = yaml.load(f,Loader=yaml.FullLoader)
+                
                 print(yaml_file)
                 yaml_file['datapoints']['ignition-delay'][0]['csvfile']=outfile
                 yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['name']='tau'
