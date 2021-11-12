@@ -525,7 +525,7 @@ class ranking():
                and estimates the uncertainty in the ignition delay.'''
 
             ig_block_og=self.get_ignition_block(self.module0.S_original)
-
+            #print(self.module0.)
             sigma_ig=self.calculate_sigma(ig_block_og,self.module0.C_original)
             original_posterior=sigma_ig
 
