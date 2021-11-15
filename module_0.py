@@ -12,6 +12,7 @@ import pandas as pd
 import re
 import numpy as np
 import yaml
+import copy
 
 
 class DoE():
@@ -53,7 +54,16 @@ class DoE():
         print(self.initial_optimization.z_data_frame)     
         wait=input("Press enter to continue")
         self.S_original=self.initial_optimization.S_matrix
+        old_X_list=list(self.initial_optimization.X_data_frame['value'])
+        Z=copy.deepcopy(self.initial_optimization.z_data_frame)
+        matrices=pd.DataFrame(data=self.S_original,columns=old_X_list)
+        matrices['rows']=Z['value']
+        matrices.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                'matrices-original.csv'),index=False)
         self.C_original=self.initial_optimization.covarience        
+        covar=pd.DataFrame(data=self.C_original,columns=self.old_X_list)
+        covar.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+                                                'covar-original.csv'),index=False)
         self.uncertainties=self.calculate_uncertainty(self.S_original,self.C_original)
         
     
@@ -229,6 +239,7 @@ class DoE():
                 with open(os.path.join(self.startup_data['working_dir'],self.yaml_template[0]),'w') as f:
                     yaml.safe_dump(yaml_file, f,default_flow_style=False)
                 self.yaml_file_list=self.experiments+[self.yaml_template]
+                #print(self.yaml_file_list)
             elif self.startup_data['qoi_exp']:
                 '''Code enters here if the quantity of interest is among the experimental data'''
                 yaml_class_inst = MSI.simulations.yaml_parser.Parser()

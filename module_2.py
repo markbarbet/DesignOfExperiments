@@ -86,6 +86,8 @@ class ranking():
         self.manager.stop()
         matrices=pd.DataFrame(data=self.updated_S,columns=new_X_list)
         matrices['rows']=new_Z['value']
+        #np.savetxt(os.path.join(self.module0.startup_data['working_dir'],
+        #                                       'S_updated.csv'),self.updated_S)
         new_Z.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 'Z.csv'),index=False)
         #cov=pd.DataFrame(data=self.updated_c,columns=new_X_list)
@@ -94,6 +96,7 @@ class ranking():
         #                                        'cov-debugging.csv'),index=False)
         matrices.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 'matrices-debugging.csv'),index=False)
+                                                
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 self.settings['output-csv']),index=False)
             
@@ -564,6 +567,7 @@ class ranking():
                 #print(self.module0.initial_optimization.Y_data_frame['value'][635:])
                 #print('CountH: '+str(countH)+', countV: '+str(countV))
                 S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S,countH=countH,countV=countV)
+
                 if iteration==0:
                     new_X_list=list(self.module0.initial_optimization.X_data_frame['value'])+X_to_add
                 elif iteration>0:
