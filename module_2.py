@@ -602,6 +602,8 @@ class ranking():
                 elif re.match('[Ii]gnition[-_ ][Dd]elay',self.module0.startup_data['quantity_of_interest']):
                     print('Entered correct statement')
                     ig_block=self.get_ignition_block(S_proposed)
+                    if i==len(self.module1.yaml_file_list)-1:
+                        print(ig_block)
                     sigma=self.calculate_sigma(ig_block,c)
                     ranking_list=ranking_list+[sigma/original_posterior]
                 #elif re.match('[Ii]gnition[_ -][Dd]elay',self.module0.startup_data['quantity_of_interest']):
@@ -631,7 +633,7 @@ class ranking():
             restime.append(conds['residence-time'])
             for k,spec in enumerate(species_index):
                 specs[spec].append(conds[spec])
-        print(ranking_list)
+        #print(ranking_list)
         output_ranking['ratio']=ranking_list
         output_ranking['temperature']=temps
         output_ranking['pressure']=pres
