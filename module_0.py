@@ -64,7 +64,7 @@ class DoE():
         covar=pd.DataFrame(data=self.C_original,columns=old_X_list)
         covar.to_csv(os.path.join(self.startup_data['working_dir'],
                                                 'covar-original.csv'),index=False)
-        Z.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+        Z.to_csv(os.path.join(self.startup_data['working_dir'],
                                                 'Z_old.csv'),index=False)                                        
         self.uncertainties=self.calculate_uncertainty(self.S_original,self.C_original)
         
