@@ -58,11 +58,11 @@ class DoE():
         Z=copy.deepcopy(self.initial_optimization.z_data_frame)
         matrices=pd.DataFrame(data=self.S_original,columns=old_X_list)
         matrices['rows']=Z['value']
-        matrices.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+        matrices.to_csv(os.path.join(self.startup_data['working_dir'],
                                                 'matrices-original.csv'),index=False)
         self.C_original=self.initial_optimization.covarience        
         covar=pd.DataFrame(data=self.C_original,columns=self.old_X_list)
-        covar.to_csv(os.path.join(self.module0.startup_data['working_dir'],
+        covar.to_csv(os.path.join(self.startup_data['working_dir'],
                                                 'covar-original.csv'),index=False)
         self.uncertainties=self.calculate_uncertainty(self.S_original,self.C_original)
         
@@ -183,23 +183,41 @@ class DoE():
         
     def startup_no_rate_constant(self):
         yaml_class_inst = MSI.simulations.yaml_parser.Parser()
-        yaml_object=yaml_class_inst.load_to_obj(path=self.yaml_template)
+        yaml_object=yaml_class_inst.load_to_obj(path=os.path.join(self.startup_data['working_dir'],self.yaml_template[0]))
         yaml_dict = yaml_class_inst.parse_ignition_delay_obj(loaded_exp=yaml_object)
+
         if re.match('[Ii]gnition[- ][Dd]elay', self.quantity_of_interest):
-            if not yaml_dict['csvFiles']:
-                print('Template yaml csv file is empty: Assuming data for quantity of interest must be generated.')
+            #if not yaml_dict['csvFiles']:
+                #print('Template yaml csv file is empty: Assuming data for quantity of interest must be generated.')
                 
                 '''Include code here to run the ignition delay at the conditions of the QoI, then write csv files
                    and edit the yaml file to include it'''
+
                 solution=self.run_ignition_delay(yaml_dict)
-                outfile=self.write_fake_csv(os.path.join(self.working_dir,'temp_data.csv'),solution)
+                solution.rename(columns={'delay':'tau_s'},inplace=True)
+                solution=solution[['temperature','tau_s','pressure']]
+                outfile=self.write_fake_csv(os.path.join(self.startup_data['working_dir'],'temp_data.csv'),solution)
                 yaml_dict['csvFiles'].append(outfile)
                 yaml_dict['ignitionDelayCsvFiles'].append(outfile)
                 yaml_dict['ignitionDelayRelativeUncertainty']=[10000]
                 yaml_dict['ignitionDelayAbsoluteUncertainty']=[1.0]
+                with open(os.path.join(self.startup_data['working_dir'],self.yaml_template[0])) as f:
+                    yaml_file = yaml.load(f,Loader=yaml.FullLoader)
                 
-            else:
-                pass
+                #print(yaml_file)
+                yaml_file['datapoints']['ignition-delay'][0]['csvfile']=outfile
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['name']='tau'
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['observable']='tau'
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['relative-uncertainty']= 10000
+                yaml_file['datapoints']['ignition-delay'][0]['targets'][0]['absolute-uncertainty']=1.0
+                with open(os.path.join(self.startup_data['working_dir'],self.yaml_template[0]),'w') as f:
+                    yaml.safe_dump(yaml_file, f,default_flow_style=False)
+                
+                
+            #else:
+
+
+                #pass
             
             
         self.yaml_file_list=self.experiments+[self.yaml_template]
