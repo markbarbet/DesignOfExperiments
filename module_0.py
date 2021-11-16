@@ -61,7 +61,7 @@ class DoE():
         matrices.to_csv(os.path.join(self.startup_data['working_dir'],
                                                 'matrices-original.csv'),index=False)
         self.C_original=self.initial_optimization.covarience        
-        covar=pd.DataFrame(data=self.C_original,columns=self.old_X_list)
+        covar=pd.DataFrame(data=self.C_original,columns=old_X_list)
         covar.to_csv(os.path.join(self.startup_data['working_dir'],
                                                 'covar-original.csv'),index=False)
         self.uncertainties=self.calculate_uncertainty(self.S_original,self.C_original)
