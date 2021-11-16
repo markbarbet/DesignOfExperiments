@@ -96,7 +96,7 @@ class ranking():
         #                                        'cov-debugging.csv'),index=False)
         matrices.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 'matrices-debugging.csv'),index=False)
-                                                
+
         final_exp_dataframe.to_csv(os.path.join(self.module0.startup_data['working_dir'],
                                                 self.settings['output-csv']),index=False)
             
@@ -529,6 +529,7 @@ class ranking():
                and estimates the uncertainty in the ignition delay.'''
 
             ig_block_og=self.get_ignition_block(self.module0.S_original)
+            print(ig_block_og)
             #print(self.module0.)
             sigma_ig=self.calculate_sigma(ig_block_og,self.module0.C_original)
             original_posterior=sigma_ig
