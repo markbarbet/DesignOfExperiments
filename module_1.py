@@ -136,6 +136,8 @@ class potential_experiments():
                 for count, item in enumerate(div_args):
                     with multiprocessing.Pool(processes=self.cores,maxtasksperchild=1) as pool:
                         temp_mat=pool.map(get_matrices_parallel,item)
+                        pool.close()
+                        pool.join()
                     self.matrices=self.matrices+temp_mat
                 #with multiprocessing.Pool(processes=self.cores) as pool:
                 #    self.matrices=pool.map(get_matrices_parallel,args,chunksize=10)
