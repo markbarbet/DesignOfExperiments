@@ -16,6 +16,7 @@ import module_0 as m0
 import multiprocessing
 from shutil import copyfile
 import traceback
+import copy
 
 def get_matrices_parallel(arg):
         file=arg[0]
@@ -116,7 +117,8 @@ class potential_experiments():
                                           'mechanical-boundary':'constant pressure',
                                           'volume':0.000085,
                                           'yaml_output_name':'DoE_yaml_',
-                                          'parallel-computing':True}):
+                                          'parallel-computing':True,
+                                          'gridpoints':{}}):
         self.input_options=input_options
         self.constructor_settings=self.input_options['constructor_settings']
         if re.match('[Jj][Ss][Rr]',self.input_options['experiment_type']) or re.match('[Jj]et[- ][Ss]tirred[- ][Rr]eactor',self.input_options['experiment_type']):
@@ -300,7 +302,49 @@ class potential_experiments():
     def JSR_conditions_constructor(self,settings):
         conditions=pd.DataFrame()
         
-        if re.match('[Ii]ntervals',settings['method']):
+        if re.match('[Gg]rid[-_ ][Ll]og',settings['method']):
+            dimension=0
+            conds_dict={}
+            var_list=[]
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                dimension=dimension+1
+                points=self.input_options['gridpoints'][species]
+                temparray=np.zeros(points)
+                if self.input_options['mixture_species'][species][0]==0:
+                    temparray[1:]=np.logspace(1e-5,self.input_options['mixture_species'][species][1],num=points-1)
+                elif self.input_options['mixture_species'][species][0]!=0:
+                    temparray=np.logspace(self.input_options['mixture_species'][species][0],self.input_options['mixture_species'][species][1],num=points)
+                conds_dict[species]=copy.deepcopy(temparray)
+            
+            conds_dict['temperatures']=np.linspace(self.input_options['temperature_range'][0],self.input_options['temperature_range'][1],
+                                                   num=self.input_options['gridpoints']['temperature'])
+            conds_dict['pressures']=np.linspace(self.input_options['pressure_range'][0],self.input_options['pressure_range'][1],
+                                                   num=self.input_options['gridpoints']['pressure'])
+            conds_dict['restimes']=np.linspace(self.input_options['residence_time'][0],self.input_options['residence_time'][1],
+                                                   num=self.input_options['gridpoints']['restime'])
+            
+            keys=[]
+            for i,species in enumerate(list(self.input_options['mixture_species'].keys())):
+                var_list.append(conds_dict[species])
+                keys.append(species)
+            keys.append('temperatures')
+            keys.append('pressures')
+            keys.append('restimes')
+            var_list.append(conds_dict['temperatures'])
+            var_list.append(conds_dict['pressures'])
+            var_list.append(conds_dict['restimes'])
+            temparray=np.array(np.meshgrid(*var_list)).T.reshape(-1,len(var_list)).T
+            for i,value in enumerate(keys):
+                conditions[value]=temparray[i]
+            conditions['index']=np.arange(1,len(temparray[0])+1)
+            conditions.to_csv(os.path.join(os.getcwd(),'test_conditions.csv'),index=False)  
+            dimension=dimension+3
+            
+            
+            
+                
+        
+        elif re.match('[Ii]ntervals',settings['method']):
             if 'all' in list(settings['intervals']['species'].keys()):
                 #Assumes that the same interval is applied to all non-diluent species
                 fractions={}
