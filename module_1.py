@@ -80,14 +80,18 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
         newfile=None
         temp_cti=None
         original_cti=None
-        working_directory=None
         files_to_include=None
         cti_file=None
-        yaml_list=None
-        working_dir=None
         reaction_uncertainty_csv=None
         MSI_instance=None
-        return {'S':S,'Y':Y,'Z':Z,'excluded_yaml':exclude}
+        print(yaml_list[0][0])
+        print(yaml_list[0][0].split('_')[-1].split('.')[0])
+        np.save(os.path.join(working_directory,'S_'+yaml_list[0][0].split('_')[-1].split('.')[0]),S)
+        Y.to_csv(os.path.join(working_directory,'Y_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
+        Z.to_csv(os.path.join(working_directory,'Z_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
+        #return {'S':S,'Y':Y,'Z':Z,'excluded_yaml':exclude}
+        return {'excluded_yaml':exclude}
+
 
 class potential_experiments():
     
@@ -135,10 +139,12 @@ class potential_experiments():
                 args=self.get_args()
                 div_args=list(self.divide_list(args,10000))
                 self.matrices=[]
-                for count, item in enumerate(div_args):
-                    with multiprocessing.Pool(processes=self.cores,maxtasksperchild=1) as pool:
-                        temp_mat=pool.map(get_matrices_parallel,item)
-                    self.matrices=self.matrices+temp_mat
+                #for count, item in enumerate(div_args):
+                with multiprocessing.Pool(processes=self.cores,maxtasksperchild=1) as pool:
+                        temp_mat=pool.map(get_matrices_parallel,args)
+                        pool.close()
+                        pool.join()
+                        self.matrices=temp_mat
                 #with multiprocessing.Pool(processes=self.cores) as pool:
                 #    self.matrices=pool.map(get_matrices_parallel,args,chunksize=10)
 
@@ -147,11 +153,38 @@ class potential_experiments():
                 for i,mat in enumerate(self.matrices):
                     if mat['excluded_yaml']=='':
                         included_files.append(self.yaml_file_list[i])
+                        #included_matrices.append(mat)
+                        mat['S']=np.load(os.path.join(self.input_options['working_dir'],'S_'+str(i+1)+'.npy'))
+                        mat['Y']=pd.read_csv(os.path.join(self.input_options['working_dir'],'Y_'+str(i+1)+'.csv'))
+                        mat['Z']=pd.read_csv(os.path.join(self.input_options['working_dir'],'Z_'+str(i+1)+'.csv'))
                         included_matrices.append(mat)
-                    
+                    loop_len=i
                 self.yaml_file_list=included_files
                 self.matrices=included_matrices
+                self.garbage_collection(self.input_options['working_dir'],loop_len)
                     #print(self.yaml_file_list)
+
+    def garbage_collection(self,working_dir,num):
+        #Function to delete extraneous S,Y,Z files along with csv files and yaml files 
+        #leftover from the "fake" experiment generation
+        for i in range(num):
+
+            #Delete S
+            if os.path.exists(os.path.join(working_dir,'S_'+str(i+1)+'.npy')):
+                os.remove(os.path.join(working_dir,'S_'+str(i+1)+'.npy'))
+            if os.path.exists(os.path.join(working_dir,'Y_'+str(i+1)+'.csv')):
+                os.remove(os.path.join(working_dir,'Y_'+str(i+1)+'.csv'))
+            if os.path.exists(os.path.join(working_dir,'Z_'+str(i+1)+'.csv')):
+                os.remove(os.path.join(working_dir,'Z_'+str(i+1)+'.csv'))
+
+
+            #if os.path.exists(os.path.join(working_dir,'DoE_yaml_'+str(i+1)+'.yaml')):
+            #    os.remove(os.path.join(working_dir,'DoE_yaml_'+str(i+1)+'.yaml'))
+        
+        for item in os.listdir(working_dir):
+            if 'DoE_yaml_' in item and '.csv' in item:
+                os.remove(os.path.join(working_dir,item))
+
                     
                     
     def divide_list(self,arglist,n):

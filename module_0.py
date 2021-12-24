@@ -52,7 +52,7 @@ class DoE():
                 
         self.initial_optimization = self.run_msi(rate_constant_target_value_data=self.MSI_settings['rate_constant_targets'])   
         print(self.initial_optimization.z_data_frame)     
-        wait=input("Press enter to continue")
+        # wait=input("Press enter to continue")
         self.S_original=self.initial_optimization.S_matrix
         old_X_list=list(self.initial_optimization.X_data_frame['value'])
         Z=copy.deepcopy(self.initial_optimization.z_data_frame)
