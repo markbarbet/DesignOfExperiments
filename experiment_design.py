@@ -157,7 +157,7 @@ class design_of_experiments():
             
             self.module_1_input['residence_time']=[self.input_options['new_experiments']['residence_time']['low'],
                                                       self.input_options['new_experiments']['residence_time']['high']]
-            self.module_1_input['gridpoints']['restime']=self.input_options['new_experiments']['residence_times']['gridpoints']
+            self.module_1_input['gridpoints']['restime']=self.input_options['new_experiments']['residence_time']['gridpoints']
             self.module_1_input['restime-uncertainty']=self.input_options['new_experiments']['residence_time']['uncertainty']
             
             
