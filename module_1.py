@@ -344,10 +344,10 @@ class potential_experiments():
                 points=self.input_options['gridpoints'][species]
                 temparray=np.zeros(points)
                 if self.input_options['mixture_species'][species][0]==0:
-                    temparray[1:]=np.logspace(1e-5,self.input_options['mixture_species'][species][1],num=points-1)
+                    temparray[1:]=np.logspace(np.log10(1e-5),np.log10(self.input_options['mixture_species'][species][1]),num=points-1)
                     temparray[1:]=np.power(10,temparray[1:])
                 elif self.input_options['mixture_species'][species][0]!=0:
-                    temparray=np.logspace(self.input_options['mixture_species'][species][0],self.input_options['mixture_species'][species][1],num=points)
+                    temparray=np.logspace(np.log10(self.input_options['mixture_species'][species][0]),np.log10(self.input_options['mixture_species'][species][1]),num=points)
                     temparray=np.power(10,temparray)
                 conds_dict[species]=copy.deepcopy(temparray)
             
