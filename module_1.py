@@ -66,6 +66,19 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             #print(Y)
             os.remove(temp_cti)
             os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
+            newfile=None
+            temp_cti=None
+            original_cti=None
+            files_to_include=None
+            cti_file=None
+            reaction_uncertainty_csv=None
+            MSI_instance=None
+            print(yaml_list[0][0])
+            print(yaml_list[0][0].split('_')[-1].split('.')[0])
+            np.save(os.path.join(working_directory,'S_'+yaml_list[0][0].split('_')[-1].split('.')[0]),S)
+            Y.to_csv(os.path.join(working_directory,'Y_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
+            Z.to_csv(os.path.join(working_directory,'Z_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
+            
         except Exception as e:
             print(e)
             print(traceback.format_exc())
@@ -77,19 +90,7 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             os.remove(temp_cti)
             #os.remove(os.path.splitext(temp_cti)[0]+'_updated.cti')
         #self.add_yaml_data()
-        newfile=None
-        temp_cti=None
-        original_cti=None
-        files_to_include=None
-        cti_file=None
-        reaction_uncertainty_csv=None
-        MSI_instance=None
-        print(yaml_list[0][0])
-        print(yaml_list[0][0].split('_')[-1].split('.')[0])
-        np.save(os.path.join(working_directory,'S_'+yaml_list[0][0].split('_')[-1].split('.')[0]),S)
-        Y.to_csv(os.path.join(working_directory,'Y_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
-        Z.to_csv(os.path.join(working_directory,'Z_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
-        #return {'S':S,'Y':Y,'Z':Z,'excluded_yaml':exclude}
+        
         return {'excluded_yaml':exclude}
 
 
