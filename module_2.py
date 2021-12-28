@@ -69,7 +69,7 @@ class ranking():
         #                                        self.settings['output-csv']),index=False)  
 
             self.excluded_yamls=list(final_exp_dataframe['experiment'])
-            print(self.excluded_yamls)
+            
             #print('We are in iteration: '+str(i) )
             self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,new_Z,new_Y,new_X_list, countH=S_countH,countV=S_countV)
             #print('shape')
@@ -146,7 +146,7 @@ class ranking():
         S_countH=countH
         
         S_proposed=copy.deepcopy(S)
-        for i,file in enumerate(yamls):
+        for i,file in enumerate([yamls[-1]]):
             #print('Shit '+str(i))
             parametersZ=self.get_Z(os.path.join(self.module1.input_options['working_dir'],file),self.module1.yaml_file_list.index(file))
             new_Z=self.construct_Z_new(parametersZ,new_Z)
