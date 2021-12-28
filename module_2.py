@@ -77,8 +77,13 @@ class ranking():
             for j,item in enumerate(self.module1.yaml_file_list):
                 if item not in self.excluded_yamls:
                     current_yamls=current_yamls+[item]
+            
             #total.update(i)
             self.mainloop.update()
+            if i==total_iters:
+                np.savetxt(os.path.join(self.module0.startup_data['working_dir'],'final_S.csv'),self.updated_S,delimiter=",")
+                new_Z.to_csv(os.path.join(self.module0.startup_data['working_dir'],'final_Z.csv'),index=False)
+                new_Y.to_csv(os.path.join(self.module0.startup_data['working_dir'],'final_Y.csv'),index=False)
             #self.printProgressBar(i + 1, total_iters, prefix = 'Finding Best Experiments:', suffix = 'Complete', length = 70)
         #print(np.shape(self.updated_S),np.shape(new_X_list))
         #total.finish()
