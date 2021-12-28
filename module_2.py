@@ -80,7 +80,7 @@ class ranking():
             
             #total.update(i)
             self.mainloop.update()
-            if i==total_iters:
+            if i==total_iters-1:
                 np.savetxt(os.path.join(self.module0.startup_data['working_dir'],'final_S.csv'),self.updated_S,delimiter=",")
                 new_Z.to_csv(os.path.join(self.module0.startup_data['working_dir'],'final_Z.csv'),index=False)
                 new_Y.to_csv(os.path.join(self.module0.startup_data['working_dir'],'final_Y.csv'),index=False)
