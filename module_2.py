@@ -69,6 +69,7 @@ class ranking():
         #                                        self.settings['output-csv']),index=False)  
 
             self.excluded_yamls=list(final_exp_dataframe['experiment'])
+            print(self.excluded_yamls)
             #print('We are in iteration: '+str(i) )
             self.updated_S,new_Y,new_Z,new_X_list,S_countH,S_countV=self.get_updated_S(self.updated_S,self.excluded_yamls,new_Z,new_Y,new_X_list, countH=S_countH,countV=S_countV)
             #print('shape')
