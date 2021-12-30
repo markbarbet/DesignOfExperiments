@@ -76,6 +76,8 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             print(yaml_list[0][0])
             print(yaml_list[0][0].split('_')[-1].split('.')[0])
             np.save(os.path.join(working_directory,'S_'+yaml_list[0][0].split('_')[-1].split('.')[0]),S)
+            
+            np.savetxt(os.path.join(working_directory,'S_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),S,delimiter=',')
             Y.to_csv(os.path.join(working_directory,'Y_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
             Z.to_csv(os.path.join(working_directory,'Z_'+yaml_list[0][0].split('_')[-1].split('.')[0]+'.csv'),index=False)
             
