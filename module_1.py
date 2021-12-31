@@ -57,7 +57,11 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             MSI_instance.run_simulations()
             exclude=''
             MSI_instance.get_matrices()
-        
+            print(working_directory)
+            print(files_to_include)
+            print(reaction_uncertainty_csv)
+            print(rate_constant_target_value_data)
+            print(newfile)
             S=MSI_instance.S_matrix
             #X=MSI_instance.X
             Z=MSI_instance.z_data_frame
