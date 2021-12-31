@@ -57,6 +57,7 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
             MSI_instance.run_simulations()
             exclude=''
             MSI_instance.get_matrices()
+            print(MSI_instance.S_matrix[0:4,9:13])
             print(working_directory)
             print(files_to_include)
             print(reaction_uncertainty_csv)
