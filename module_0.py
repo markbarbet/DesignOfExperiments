@@ -13,9 +13,17 @@ import re
 import numpy as np
 import yaml
 import copy
+import doe_object as obj
 
 
 class DoE():
+    
+    
+    def __init__(self,doe_obj:obj.doe_object):
+    
+        self.experiments=doe_obj.input_options['experiments']
+        self.quantity_of_interest=doe_obj.input_options['quantity_of_interest']
+        self.yaml_template=
     
     
     def __init__(self,startup_data:dict={'experiments':[],

@@ -14,6 +14,8 @@ import os
 import fire
 import yaml
 import re
+import doe_object
+
 
 
 class design_of_experiments():
