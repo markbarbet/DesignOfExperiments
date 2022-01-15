@@ -14,7 +14,7 @@ import os
 import fire
 import yaml
 import re
-import doe_object
+import doe_object as dobj
 
 
 
@@ -91,13 +91,13 @@ class design_of_experiments():
         self.module_0_input['target_reaction']['temperatures']=self.input_options['target_reaction']['temperature']['values']
     
     def get_MSI_settings(self):
-        self.MSI_settings={}
-        self.MSI_settings['chemical_model']=self.input_options['MSI_settings']['chemical_model']
-        self.MSI_settings['reaction_uncertainty']=self.input_options['MSI_settings']['reaction_uncertainty']
+        self.module_0_input['MSI_settings']={}
+        self.module_0_input['MSI_settings']['chemical_model']=self.input_options['MSI_settings']['chemical_model']
+        self.module_0_input['MSI_settings']['reaction_uncertainty']=self.input_options['MSI_settings']['reaction_uncertainty']
         if self.input_options['MSI_settings']['rate_constant_targets']==None:
-            self.MSI_settings['rate_constant_targets']=''
+            self.module_0_input['MSI_settings']['rate_constant_targets']=''
         else:
-            self.MSI_settings['rate_constant_targets']=self.input_options['MSI_settings']['rate_constant_targets']
+            self.module_0_input['MSI_settings']['rate_constant_targets']=self.input_options['MSI_settings']['rate_constant_targets']
      
     def get_experiment_attributes(self):
         self.module_1_input['experiment_type']=self.input_options['new_experiments']['experiment_type']
@@ -278,10 +278,15 @@ class design_of_experiments():
         self.get_parallel_setting()
         self.get_mod2_settings()
         
+    def initialize_doe_obj(self):
+        
+        return(dobj.doe_object(self.module_0_input)) 
         
     def run_DoE(self):
         #print(self.module_0_input)
-        self.mod0=module_0.DoE(startup_data=self.module_0_input,MSI_settings=self.MSI_settings)
+        doe_obj=self.initialize_doe_obj()
+        self.mod0=module_0.DoE(doe_obj)
+        self.mod0=None
         self.module_1_input['initialization']=self.mod0
         self.mod1=module_1.potential_experiments(input_options=self.module_1_input)
         self.mod2=module_2.ranking(module0=self.mod0,module1=self.mod1,settings=self.mod2_settings)

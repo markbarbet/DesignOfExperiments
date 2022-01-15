@@ -32,9 +32,15 @@ class doe_object():
         self.covar_original=None
         self.Z_original=None
         self.X_original=None
-        self.Z_original=None
+        self.Y_original=None
         self.prior_experiments=[]
-        
+     
+    def set_priors(self,S,C,Z,X,Y):
+        self.S_original=S
+        self.covar_original=C
+        self.Z_original=Z
+        self.X_original=X
+        self.Y_original=Y   
         
     def plot_convergence(self,log=True):
         if self.sorted_uncertainties == None:

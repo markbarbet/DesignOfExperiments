@@ -23,25 +23,27 @@ class DoE():
     
         self.experiments=doe_obj.input_options['experiments']
         self.quantity_of_interest=doe_obj.input_options['quantity_of_interest']
-        self.yaml_template=
+        self.yaml_template=doe_obj.input_options['yaml_template']
+        self.MSI_settings=doe_obj.input_options['MSI_settings']
+        self.startup_data=doe_obj.input_options
     
     
-    def __init__(self,startup_data:dict={'experiments':[],
-                                         'quantity_of_interest':'',
-                                         'qoi_exp':False,
-                                         'yaml_template':'',
-                                         'working_dir':'',
-                                         'target_reaction':{'temperatures':[1000],
-                                                            'pressure':ct.one_atm,
-                                                            'equation':'',
-                                                            'mixture':{}}},
-                 MSI_settings={'chemical_model':'','reaction_uncertainty':'',
-                               'rate_constant_targets':''}):
-        self.experiments=startup_data['experiments']
-        self.quantity_of_interest=startup_data['quantity_of_interest']
-        self.yaml_template=startup_data['yaml_template']
-        self.MSI_settings=MSI_settings
-        self.startup_data=startup_data
+    # def __init__(self,startup_data:dict={'experiments':[],
+    #                                         'quantity_of_interest':'',
+    #                                         'qoi_exp':False,
+    #                                         'yaml_template':'',
+    #                                         'working_dir':'',
+    #                                         'target_reaction':{'temperatures':[1000],
+    #                                                         'pressure':ct.one_atm,
+    #                                                         'equation':'',
+    #                                                         'mixture':{}}},
+    #                 MSI_settings={'chemical_model':'','reaction_uncertainty':'',
+    #                             'rate_constant_targets':''}):
+    #     self.experiments=startup_data['experiments']
+    #     self.quantity_of_interest=startup_data['quantity_of_interest']
+    #     self.yaml_template=startup_data['yaml_template']
+    #     self.MSI_settings=MSI_settings
+    #     self.startup_data=startup_data
         
         if self.experiments:
             if  re.match('[rR]ate[- ][Cc]onstant',self.quantity_of_interest):
@@ -75,7 +77,7 @@ class DoE():
         Z.to_csv(os.path.join(self.startup_data['working_dir'],
                                                 'Z_old.csv'),index=False)                                        
         self.uncertainties=self.calculate_uncertainty(self.S_original,self.C_original)
-        
+        doe_obj.set_priors(self.S_original,covar,Z,self.initial_optimization.X_data_frame,self.initial_optimization.Y_data_frame)
     
     def generate_rate_targets(self):
         tempgas=ct.Solution(os.path.join(self.startup_data['working_dir'],self.MSI_settings['chemical_model']))

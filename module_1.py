@@ -17,6 +17,7 @@ import multiprocessing
 from shutil import copyfile
 import traceback
 import copy
+import doe_object as dobj
 
 def get_matrices_parallel(arg):
         file=arg[0]
@@ -103,36 +104,41 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
 
 class potential_experiments():
     
-    
-    def __init__(self,input_options:dict={'initialization':None,
-                                          'experiment_type':'JSR',
-                                          'observables':['H2','O2'],
-                                          'observables_abs_uncertainties':[0.00005,0.00005],
-                                          'observables_rel_uncertainties':[0.05,0.05],
-                                          'temperature_range':[600,1150], 
-                                          'temperature-uncertainty': 0.01,
-                                          'pressure_range':[1.0],
-                                          'pressure-uncertainty': 0.01,
-                                          'residence_time':[1.2],
-                                          'restime-uncertainty': 0.02,
-                                          'mixture_species':{'H2':[0.001,0.02],'O2':[0.001,0.05]},
-                                          'diluent':'Ar',
-                                          'constructor_settings':{'intervals':{'species':{'all'},
-                                                                               'pressure':[1.0],
-                                                                               'temperature':50,
-                                                                               'residence_time':0.5},
-                                                                  'method':'random_sample',
-                                                                  'random_sample_settings':{'n':[10,5]}},
-                                          'experiment_yaml_template':'',
-                                          'working_dir':'',
-                                          'thermal-boundary':'isothermal',
-                                          'mechanical-boundary':'constant pressure',
-                                          'volume':0.000085,
-                                          'yaml_output_name':'DoE_yaml_',
-                                          'parallel-computing':True,
-                                          'gridpoints':{}}):
-        self.input_options=input_options
+    def __init__(self,doe_obj:dobj.doe_object):
+        self.input_options=doe_obj['mod0_inputs']
         self.constructor_settings=self.input_options['constructor_settings']
+        
+        
+    
+    # def __init__(self,input_options:dict={'initialization':None,
+    #                                       'experiment_type':'JSR',
+    #                                       'observables':['H2','O2'],
+    #                                       'observables_abs_uncertainties':[0.00005,0.00005],
+    #                                       'observables_rel_uncertainties':[0.05,0.05],
+    #                                       'temperature_range':[600,1150], 
+    #                                       'temperature-uncertainty': 0.01,
+    #                                       'pressure_range':[1.0],
+    #                                       'pressure-uncertainty': 0.01,
+    #                                       'residence_time':[1.2],
+    #                                       'restime-uncertainty': 0.02,
+    #                                       'mixture_species':{'H2':[0.001,0.02],'O2':[0.001,0.05]},
+    #                                       'diluent':'Ar',
+    #                                       'constructor_settings':{'intervals':{'species':{'all'},
+    #                                                                            'pressure':[1.0],
+    #                                                                            'temperature':50,
+    #                                                                            'residence_time':0.5},
+    #                                                               'method':'random_sample',
+    #                                                               'random_sample_settings':{'n':[10,5]}},
+    #                                       'experiment_yaml_template':'',
+    #                                       'working_dir':'',
+    #                                       'thermal-boundary':'isothermal',
+    #                                       'mechanical-boundary':'constant pressure',
+    #                                       'volume':0.000085,
+    #                                       'yaml_output_name':'DoE_yaml_',
+    #                                       'parallel-computing':True,
+    #                                       'gridpoints':{}}):
+    #     self.input_options=input_options
+    #     self.constructor_settings=self.input_options['constructor_settings']
         if re.match('[Jj][Ss][Rr]',self.input_options['experiment_type']) or re.match('[Jj]et[- ][Ss]tirred[- ][Rr]eactor',self.input_options['experiment_type']):
             self.exp_type='JSR'
             self.conditions_list=self.JSR_conditions_constructor(self.input_options['constructor_settings'])
@@ -143,7 +149,7 @@ class potential_experiments():
                 self.matrices=self.get_matrices()  
                 
             elif self.input_options['parallel-computing']:
-                self.cores=input_options['cores']
+                self.cores=self.input_options['mod0_inputs']['cores']
                 args=self.get_args()
                 div_args=list(self.divide_list(args,10000))
                 self.matrices=[]
