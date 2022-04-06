@@ -157,17 +157,17 @@ class potential_experiments():
                 self.matrices=[]
                 #for count, item in enumerate(div_args):
                 start=time.time()
-                temp_mat=Parallel(n_jobs=self.cores)(delayed(get_matrices_parallel)(arg) for i,arg in enumerate(args))
-                #with multiprocessing.Pool(processes=self.cores,maxtasksperchild=1) as pool:
-                #        temp_mat=pool.map(get_matrices_parallel,args)
-                #        pool.close()
-                #        pool.join()
-                #        self.matrices=temp_mat
+                #temp_mat=Parallel(n_jobs=self.cores)(delayed(get_matrices_parallel)(arg) for i,arg in enumerate(args))
+                with multiprocessing.Pool(processes=self.cores,maxtasksperchild=1) as pool:
+                        temp_mat=pool.map(get_matrices_parallel,args)
+                        pool.close()
+                        pool.join()
+                        self.matrices=temp_mat
                 #with multiprocessing.Pool(processes=self.cores) as pool:
                 #    self.matrices=pool.map(get_matrices_parallel,args,chunksize=10)
                 stop=time.time()
                 print('{:.4f} s'.format(stop-start))
-                self.matrices=temp_mat
+                #self.matrices=temp_mat
                 included_files=[]
                 included_matrices=[]
                 #print(len(self.matrices))
