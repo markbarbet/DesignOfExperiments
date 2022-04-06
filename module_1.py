@@ -18,6 +18,8 @@ from shutil import copyfile
 import traceback
 import copy
 import doe_object as dobj
+from joblib import Parallel, delayed
+import time
 
 def get_matrices_parallel(arg):
         file=arg[0]
@@ -105,7 +107,7 @@ def run_simulation_parallel(yaml_list,working_dir,cti_file,reaction_uncertainty_
 class potential_experiments():
     
     def __init__(self,doe_obj:dobj.doe_object):
-        self.input_options=doe_obj['mod0_inputs']
+        self.input_options=doe_obj.input_options
         self.constructor_settings=self.input_options['constructor_settings']
         
         
@@ -149,21 +151,26 @@ class potential_experiments():
                 self.matrices=self.get_matrices()  
                 
             elif self.input_options['parallel-computing']:
-                self.cores=self.input_options['mod0_inputs']['cores']
+                self.cores=self.input_options['cores']
                 args=self.get_args()
                 div_args=list(self.divide_list(args,10000))
                 self.matrices=[]
                 #for count, item in enumerate(div_args):
-                with multiprocessing.Pool(processes=self.cores,maxtasksperchild=1) as pool:
-                        temp_mat=pool.map(get_matrices_parallel,args)
-                        pool.close()
-                        pool.join()
-                        self.matrices=temp_mat
+                start=time.time()
+                temp_mat=Parallel(n_jobs=self.cores)(delayed(get_matrices_parallel)(arg) for i,arg in enumerate(args))
+                #with multiprocessing.Pool(processes=self.cores,maxtasksperchild=1) as pool:
+                #        temp_mat=pool.map(get_matrices_parallel,args)
+                #        pool.close()
+                #        pool.join()
+                #        self.matrices=temp_mat
                 #with multiprocessing.Pool(processes=self.cores) as pool:
                 #    self.matrices=pool.map(get_matrices_parallel,args,chunksize=10)
-
+                stop=time.time()
+                print('{:.4f} s'.format(stop-start))
+                self.matrices=temp_mat
                 included_files=[]
                 included_matrices=[]
+                #print(len(self.matrices))
                 for i,mat in enumerate(self.matrices):
                     if mat['excluded_yaml']=='':
                         included_files.append(self.yaml_file_list[i])
@@ -175,7 +182,11 @@ class potential_experiments():
                     loop_len=i
                 self.yaml_file_list=included_files
                 self.matrices=included_matrices
+                doe_obj.set_matrices(self.matrices)
+                doe_obj.set_yaml_list(self.yaml_file_list)
+                #print(len(self.matrices))
                 self.garbage_collection(self.input_options['working_dir'],loop_len)
+                #return self.input_options
                     #print(self.yaml_file_list)
 
     def garbage_collection(self,working_dir,num):
@@ -211,9 +222,9 @@ class potential_experiments():
         args=[]
         for i,file in enumerate(self.yaml_file_list):
             args=args+[[file,
-                       self.input_options['initialization'].startup_data['working_dir'],
-                       self.input_options['initialization'].MSI_settings['chemical_model'],
-                       self.input_options['initialization'].MSI_settings['reaction_uncertainty']]]
+                       self.input_options['working_dir'],
+                       self.input_options['MSI_settings']['chemical_model'],
+                       self.input_options['MSI_settings']['reaction_uncertainty']]]
         #print(args)
         return args
             
@@ -253,11 +264,11 @@ class potential_experiments():
     def run_simulation(self,yaml_list):
         files_to_include = yaml_list
         
-        working_directory = self.input_options['initialization'].startup_data['working_dir']
+        working_directory = self.input_options['working_dir']
         
-        cti_file = self.input_options['initialization'].MSI_settings['chemical_model']
+        cti_file = self.input_options['chemical_model']
         
-        reaction_uncertainty_csv = self.input_options['initialization'].MSI_settings['reaction_uncertainty']
+        reaction_uncertainty_csv = self.input_options['reaction_uncertainty']
         
         rate_constant_target_value_data = ''
         

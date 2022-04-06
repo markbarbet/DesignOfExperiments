@@ -78,6 +78,7 @@ class DoE():
                                                 'Z_old.csv'),index=False)                                        
         self.uncertainties=self.calculate_uncertainty(self.S_original,self.C_original)
         doe_obj.set_priors(self.S_original,covar,Z,self.initial_optimization.X_data_frame,self.initial_optimization.Y_data_frame)
+        #return doe_obj
     
     def generate_rate_targets(self):
         tempgas=ct.Solution(os.path.join(self.startup_data['working_dir'],self.MSI_settings['chemical_model']))
