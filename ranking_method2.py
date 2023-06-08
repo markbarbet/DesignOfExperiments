@@ -283,29 +283,50 @@ class ranking():
         new_Y=pd.concat([Y,add_Y],ignore_index=True)
         return new_Y
     
-    def get_S_block(self,col_min,col_max,row_min,row_max, S):
+    def get_S_block(self,col_min,col_max,row_min,row_max, S,flag=False,X_add=None):
         #print(np.shape(S))
         #return S[row_min:row_max,col_min:col_max]
+        y_len=3*self.num_rxns+len(self.inputs['observables'])+X_add
+        if flag:
+            #y_len=len(self.doe_obj.Y_original)
+            #print("Fuckshit is : "+str(y_len))
+            temp_S=np.zeros((3*self.num_rxns+len(self.inputs['observables'])+X_add,3*self.num_rxns+X_add))
+            indices=np.arange(y_len-len(self.inputs['observables']))
+            temp_S[indices+len(self.inputs['observables']),indices]=1.0
+            temp_S[0:len(self.inputs['observables']),0:np.shape(S)[1]]=S
+            #print(temp_S)
+            S=temp_S
+            #print(col_min,col_max,row_min,row_max)
+            #print(np.shape(temp_S))
+        #print(np.shape(S))
         return S[col_min:col_max,row_min:row_max]
     
     def get_new_S_chunks(self,rxn_count,X_add,Y_add,add_Z,S_current,Y,Z,S_new):
         #print(np.shape(S_current),np.shape(S_new))
-        
-        
-        S1_new=self.get_S_block(0,self.experiment_length,0,3*self.num_rxns,S_new)
-        S2_new=self.get_S_block(0, self.experiment_length, 3*self.num_rxns, 3*self.num_rxns+len(X_add)+1, S_new)
+        #time.sleep(5)
+        #print(np.shape(S_new))
+        with open(os.path.join(os.getcwd(),'log.txt'),'a') as f:
+            f.write(str(np.shape(S_new)))
+            f.write('\n')
+        #print(S_new)
+        #print("Length is: "+str(self.experiment_length))
+        S1_new=self.get_S_block(0,self.experiment_length,0,3*self.num_rxns,S_new,X_add=len(X_add))
+        #print('EXP Length',self.experiment_length)
+        S2_new=self.get_S_block(0, self.experiment_length, 3*self.num_rxns, 3*self.num_rxns+len(X_add)+1, S_new,X_add=len(X_add))
         #print(np.shape(S1_new))
         #print(np.shape(S2_new))
+        #print(self.experiment_length,self.experiment_length+3*self.num_rxns,
+        #                        3*self.num_rxns,3*self.num_rxns+len(X_add)+1)
         S3_new=self.get_S_block(self.experiment_length,self.experiment_length+3*self.num_rxns,
-                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new)
+                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new,flag=True,X_add=len(X_add))
         #print(np.shape(S3_new))
         S4_new=self.get_S_block(self.experiment_length+3*self.num_rxns,
                                 self.experiment_length+3*self.num_rxns+len(X_add)+1,
-                                0,3*self.num_rxns,S_new)
+                                0,3*self.num_rxns,S_new,flag=True,X_add=len(X_add))
         #print(np.shape(S4_new))
         S5_new=self.get_S_block(self.experiment_length+3*self.num_rxns,
                                 self.experiment_length+3*self.num_rxns+len(X_add)+1,
-                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new)
+                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new,flag=True,X_add=len(X_add))
         #print(np.shape(S5_new))
         #print(S5_new)
         return (S1_new,S2_new,S3_new,S4_new,S5_new)
@@ -374,10 +395,33 @@ class ranking():
         #print(np.shape(Z1))
         #print(np.shape(S3))
         #print(np.shape(Z2))
+        #print(np.shape(S1))
+        #print(np.shape(Z3))
+        #print(np.shape(S2))
+        #print(np.shape(S4))
+        #print(np.shape(Z4))
+        #print(np.shape(S5))
         block1=np.block([[Z1],[S3],[Z2]])
         block2=np.block([[S1,Z3,S2],[S4,Z4,S5]])
         #print(np.shape(Z2),np.shape(Z3),np.shape(Z4))
-        
+        #print(np.shape(block1),'KEY')
+        #print(np.shape(block2))
+        #print(np.shape(S_old))
+        #print('POOOOOOOOOOOOO')
+        with open(os.path.join(os.getcwd(),'log.txt'),'a') as f:
+            f.write('Z1: '+str(np.shape(Z1))+'\n')
+            f.write('S3: '+str(np.shape(S3))+'\n')
+            f.write('Z2: '+str(np.shape(Z2))+'\n')
+            f.write('S1: '+str(np.shape(S1))+'\n')
+            f.write('Z3: '+str(np.shape(Z3))+'\n')
+            f.write('S2: '+str(np.shape(S2))+'\n')
+            f.write('S4: '+str(np.shape(S4))+'\n')
+            f.write('Z4: '+str(np.shape(Z4))+'\n')
+            f.write('S5: '+str(np.shape(S5))+'\n')
+            f.write('block1: '+str(np.shape(block1))+'\n')
+            f.write('block2: '+str(np.shape(block2))+'\n')
+            f.write('S_old: '+str(np.shape(S_old))+'\n')
+        #print(self.experiment_length)
         #print('S',np.shape(S_old))
         #print('Z1',np.shape(Z1))
         # print('S3',np.shape(S3))
@@ -566,7 +610,7 @@ class ranking():
             sigma_list_index=self.get_unique_elements(list(targets['Reaction']),gas).index(target_index)
             #print(sigma_list[sigma_list_index][0])
             original_covar_det=np.linalg.slogdet(self.doe_obj.covar_original)[1]
-            print(original_covar_det)
+            ##print(original_covar_det)
             original_posterior=sigma_list_og[sigma_list_index][0]
 
         elif re.match('[Ii]gnition[-_ ][Dd]elay',self.inputs['quantity_of_interest']):
@@ -574,7 +618,7 @@ class ranking():
                and estimates the uncertainty in the ignition delay.'''
 
             ig_block_og=self.get_ignition_block(self.doe_obj.S_original)
-            print(ig_block_og)
+            #print(ig_block_og)
             #print(self.module0.)
             original_covar_det=np.linalg.slogdet(self.doe_obj.covar_original)[1]
             sigma_ig=self.calculate_sigma(ig_block_og,self.doe_obj.covar_original)
@@ -588,10 +632,11 @@ class ranking():
             
             if file not in excluded_yamls:
                 final_yamls.append(file)
-                print('File is:'+str(file))
+                #print('File is:'+str(file))
                 data=self.load_to_obj(os.path.join(self.inputs['working_dir'],file))
                 #parametersX,parametersY,parametersZ=self.get_experiment_columns(os.path.join(self.module1.input_options['working_dir'],file),i)
                 parametersZ=self.get_Z(os.path.join(self.inputs['working_dir'],file),i)
+                print(parametersZ)
                 parametersY=self.get_Y(os.path.join(self.inputs['working_dir'],file),i)
                 if iteration==0:
                     
@@ -609,6 +654,7 @@ class ranking():
                     X_to_add=self.get_X_names(parametersZ)
                     new_Y=self.construct_Y_new(parametersY,Y_prev)
                     self.experiment_length=self.get_exp_length(os.path.join(self.inputs['working_dir'],file))
+                #print(self.experiment_length)
                 S1_new,S2_new,S3_new,S4_new,S5_new=self.get_new_S_chunks(self.num_rxns,X_to_add,parametersY,parametersZ,
                                            self.doe_obj.S_original,
                                            self.doe_obj.Y_original,
@@ -616,6 +662,7 @@ class ranking():
                                            self.doe_obj.experiment_matrices[i]['S'])
                 #print(self.module0.initial_optimization.Y_data_frame['value'][635:])
                 #print('CountH: '+str(countH)+', countV: '+str(countV))
+                print('This is iteration: '+str(i))
                 S_proposed=self.build_S(S1_new,S2_new,S3_new,S4_new,S5_new,S,countH=countH,countV=countV)
 
                 if iteration==0:

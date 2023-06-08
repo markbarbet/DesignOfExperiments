@@ -279,29 +279,75 @@ class ranking():
         new_Y=pd.concat([Y,add_Y],ignore_index=True)
         return new_Y
     
-    def get_S_block(self,col_min,col_max,row_min,row_max, S):
+    # def get_S_block(self,col_min,col_max,row_min,row_max, S):
+    #     #print(np.shape(S))
+    #     #return S[row_min:row_max,col_min:col_max]
+    #     return S[col_min:col_max,row_min:row_max]
+    def get_S_block(self,col_min,col_max,row_min,row_max, S,flag=False,X_add=None):
         #print(np.shape(S))
         #return S[row_min:row_max,col_min:col_max]
+        y_len=3*self.num_rxns+len(self.inputs['observables'])+X_add
+        if flag:
+            #y_len=len(self.doe_obj.Y_original)
+            #print("Fuckshit is : "+str(y_len))
+            temp_S=np.zeros((3*self.num_rxns+len(self.inputs['observables'])+X_add,3*self.num_rxns+X_add))
+            indices=np.arange(y_len-len(self.inputs['observables']))
+            temp_S[indices+len(self.inputs['observables']),indices]=1.0
+            temp_S[0:len(self.inputs['observables']),0:np.shape(S)[1]]=S
+            #print(temp_S)
+            S=temp_S
+            #print(col_min,col_max,row_min,row_max)
+            #print(np.shape(temp_S))
+        #print(np.shape(S))
         return S[col_min:col_max,row_min:row_max]
-    
+
+    # def get_new_S_chunks(self,rxn_count,X_add,Y_add,add_Z,S_current,Y,Z,S_new):
+    #     #print(np.shape(S_current),np.shape(S_new))
+        
+        
+    #     S1_new=self.get_S_block(0,self.experiment_length,0,3*self.num_rxns,S_new)
+    #     S2_new=self.get_S_block(0, self.experiment_length, 3*self.num_rxns, 3*self.num_rxns+len(X_add)+1, S_new)
+    #     #print(np.shape(S1_new))
+    #     #print(np.shape(S2_new))
+    #     S3_new=self.get_S_block(self.experiment_length,self.experiment_length+3*self.num_rxns,
+    #                             3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new)
+    #     #print(np.shape(S3_new))
+    #     S4_new=self.get_S_block(self.experiment_length+3*self.num_rxns,
+    #                             self.experiment_length+3*self.num_rxns+len(X_add)+1,
+    #                             0,3*self.num_rxns,S_new)
+    #     #print(np.shape(S4_new))
+    #     S5_new=self.get_S_block(self.experiment_length+3*self.num_rxns,
+    #                             self.experiment_length+3*self.num_rxns+len(X_add)+1,
+    #                             3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new)
+    #     #print(np.shape(S5_new))
+    #     #print(S5_new)
+    #     return (S1_new,S2_new,S3_new,S4_new,S5_new)
     def get_new_S_chunks(self,rxn_count,X_add,Y_add,add_Z,S_current,Y,Z,S_new):
         #print(np.shape(S_current),np.shape(S_new))
-        
-        
-        S1_new=self.get_S_block(0,self.experiment_length,0,3*self.num_rxns,S_new)
-        S2_new=self.get_S_block(0, self.experiment_length, 3*self.num_rxns, 3*self.num_rxns+len(X_add)+1, S_new)
+        #time.sleep(5)
+        #print(np.shape(S_new))
+        with open(os.path.join(os.getcwd(),'log.txt'),'a') as f:
+            f.write(str(np.shape(S_new)))
+            f.write('\n')
+        #print(S_new)
+        #print("Length is: "+str(self.experiment_length))
+        S1_new=self.get_S_block(0,self.experiment_length,0,3*self.num_rxns,S_new,X_add=len(X_add))
+        #print('EXP Length',self.experiment_length)
+        S2_new=self.get_S_block(0, self.experiment_length, 3*self.num_rxns, 3*self.num_rxns+len(X_add)+1, S_new,X_add=len(X_add))
         #print(np.shape(S1_new))
         #print(np.shape(S2_new))
+        #print(self.experiment_length,self.experiment_length+3*self.num_rxns,
+        #                        3*self.num_rxns,3*self.num_rxns+len(X_add)+1)
         S3_new=self.get_S_block(self.experiment_length,self.experiment_length+3*self.num_rxns,
-                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new)
+                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new,flag=True,X_add=len(X_add))
         #print(np.shape(S3_new))
         S4_new=self.get_S_block(self.experiment_length+3*self.num_rxns,
                                 self.experiment_length+3*self.num_rxns+len(X_add)+1,
-                                0,3*self.num_rxns,S_new)
+                                0,3*self.num_rxns,S_new,flag=True,X_add=len(X_add))
         #print(np.shape(S4_new))
         S5_new=self.get_S_block(self.experiment_length+3*self.num_rxns,
                                 self.experiment_length+3*self.num_rxns+len(X_add)+1,
-                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new)
+                                3*self.num_rxns,3*self.num_rxns+len(X_add)+1,S_new,flag=True,X_add=len(X_add))
         #print(np.shape(S5_new))
         #print(S5_new)
         return (S1_new,S2_new,S3_new,S4_new,S5_new)
